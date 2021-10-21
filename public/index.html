@@ -11,11 +11,11 @@
 			crossorigin="anonymous"
 		/>
 		<link rel="stylesheet" href="css/style.css" />
-		<title>SKBibblio</title>
+		<title>Party</title>
 	</head>
 	<body>
 		<header class="header">
-			<h1>Fakelos SKBibblio</h1>
+			<h1>Fakelos Party</h1>
 		</header>
 		<div class="content">
 			<form class="joinform" action="room.html">
@@ -26,7 +26,78 @@
 				<button type="submit" class="btn">Join Room</button>
 			</form>
 		</div>
+		<div id="information">
+			<p>There are a total of 12 rounds, every round a game from the ones below is randomly selected. Each game is different in terms of how it's played but also in terms of points given.</p>
+			<div id='game'>
+				<h2>Draw my thing! </h2>
+				<p id='rules'>Everyone is given the same sentence and they have 90 seconds to draw it as best as they can. After the 90 seconds have passed, or if everyone finishes before that, the drawings
+					of every player are shown and you have to vote for the best.
+				</p>
+				<p id='points'>
+					Every vote counts for <b>600 points</b>.<br>
+					If a player gets more than 2 or more votes, they get an extra <b>100 points</b>.<br>
+					If a player gets all the votes(except for his own), he gets an extra <b>400 points</b>.
+				</p>
+			</div>
+			<div id='game'>
+				<h2>Fill the blank! </h2>
+				<p id='rules'>Everyone is given the same sentence with a part of the sentence missing. Each player can fill the blank and later, everyone votes for the funniest answer according to them.
+				</p>
+				<p id='points'>
+					Every vote counts for <b>600 points</b>.<br>
+					If a player gets more than 2 or more votes, they get an extra <b>100 points</b>.<br>
+					If a player gets all the votes(except for his own), he gets an extra <b>400 points</b>.
+				</p>
+			</div>
+			<div id='game'>
+				<h2>Typeracer! </h2>
+				<p id='rules'>A list of 20 randomly selected words are given to each player. Then he has to type as many words as possible in the set amount of time.
+				</p>
+				<p id='points'>
+					Every player gets <b>100 points</b> for every word typed.<br>
+					Every player loses <b>40 points</b> for every word they didn't type.<br>
+				</p>
+			</div>
+			<div id='game'>
+				<h2>Memorize the pattern! </h2>
+				<p id='rules'>The same table with 36 panels is shown to every player, 12 panels are black, 24 are not. In the given time you have to memorize the pattern and later fill the empty table.
+				</p>
+				<p id='points'>
+					Every player gets <b>100 points</b> for every correct panel.<br>
+					Every player loses <b>80 points</b> for every wrong panel.<br>
+				</p>
+			</div>
+			<div id='game'>
+				<h2>Guess my drawing! </h2>
+				<p id='rules'>A random player is selected to draw a random word in 90 seconds. Every other player has to guess what the word is.
+				</p>
+				<p id='points'>
+					Every player that guesses the word gets <b>600 points</b>.<br>
+					The artist gains <b>600 points</b> if 1 person guesses correctly, and <b>100 points</b> for every extra player.<br>
+				</p>
+			</div>
+			<div id='game'>
+				<h2>Geomaster! </h2>
+				<p id='rules'>A random location in the word is shown to every player, and everyone has to guess where that location could be on the map.
+				</p>
+				<p id='points'>
+					The players are sorted based on how close they got to the correct location.<br>
+					The player closest gains<b> 900 points</b>.<br>
+					The second player gets <b>900 - 140 points</b>.<br>
+					The third player gets <b>900 - 2 * 140 points</b>.<br>
+					etc.
+				</p>
+			</div>
+		</div>
+		<footer id="footer">
+			<div id='disclaimer'>
+				I am aware that this project probably has a ton of bugs, as a single developer I am not able to think of every possible scenario and work around that. But, that doesnt mean that bugs won't be fixed
+				it just means that I have to be made aware of them.<br>
+				You can also send me an email if you want to have a specific mini game created and added to FP.<br>
+				Contact me at <b>fak3losyoo@gmail.com</b>
+			</div>
+			<p id="copyright">Copyright &copy fakelos</p>
+		</footer>
 		<script src="/socket.io/socket.io.js"></script>
-		<!--<script src="js/main.js"></script>-->
 	</body>
 </html>

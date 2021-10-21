@@ -49,7 +49,7 @@ var artistid = '';
 var latlongarray = [];
 var guesslocation = {lat: 256, lng: 256};
 var querylocation;
-var alreadysentresults = false;
+var has_sent_results = false;
 
 
 const {username,room} = Qs.parse(location.search,{
@@ -134,14 +134,14 @@ socket.on('results', (data) =>{
     for(let i = 0; i < data.results.length; i++){
         var temp_li = document.createElement('li');
         if(data.results[i].points.bonus != 0 && data.results[i].points.minus != 0){
-            temp_li.innerHTML = "<li class='resultsli'><label>"+ data.results[i].user.username +" +"+ data.results[i].points.plus +" +"+ data.results[i].points.bonus +" -"+  data.results[i].points.minus+"</label></li>"; 
+            temp_li.innerHTML = "<li class='resultsli'><label><b>"+ data.results[i].user.username +"</b> +"+ data.results[i].points.plus +" +"+ data.results[i].points.bonus +" -"+  data.results[i].points.minus+"</label></li>"; 
         }else if(data.results[i].points.bonus != 0){
-            temp_li.innerHTML = "<li class='resultsli'><label>"+ data.results[i].user.username +" +"+ data.results[i].points.plus +" +"+ data.results[i].points.bonus +"</label></li>";
+            temp_li.innerHTML = "<li class='resultsli'><label><b>"+ data.results[i].user.username +"</b> +"+ data.results[i].points.plus +" +"+ data.results[i].points.bonus +"</label></li>";
         }else if(data.results[i].points.minus != 0){
-            temp_li.innerHTML = "<li class='resultsli'><label>"+ data.results[i].user.username +" +"+ data.results[i].points.plus +" -"+  data.results[i].points.minus+"</label></li>"; 
+            temp_li.innerHTML = "<li class='resultsli'><label><b>"+ data.results[i].user.username +"</b> +"+ data.results[i].points.plus +" -"+  data.results[i].points.minus+"</label></li>"; 
         }
         else{
-            temp_li.innerHTML = "<li class='resultsli'><label>"+ data.results[i].user.username +" +"+ data.results[i].points.plus +"</label></li>";
+            temp_li.innerHTML = "<li class='resultsli'><label><b>"+ data.results[i].user.username +"<b> +"+ data.results[i].points.plus +"</label></li>";
         }
         data_ul.appendChild(temp_li);
     }
@@ -157,6 +157,8 @@ socket.on('start_second_phase', (res)=>{
 })
 
 socket.on('start_round',(promt)=>{
+    second_panel.style.display = 'none';
+    has_sent_results = false;
     current_game = promt.type;
     if(promt.type == 1){
         promt_label.innerHTML = "Next Round: Draw my thing!";
@@ -509,6 +511,7 @@ function start_round_guessdraw(promt){
         canusechat = false;
         document.getElementById("buttons").style.visibility = 'visible';
         socket.emit('results', {type: current_game, id: myid, count: 0});
+        has_sent_results = true;
     }
     else{
         var tempword = [];
@@ -540,6 +543,7 @@ function second_phase_draw_data(res){
         let temp_button_onclick = "send_res('"+ res[i].user +"')";
         temp_li.innerHTML = "<li class='canvasli'><button class='canvasbutton' onclick="+temp_button_onclick+"><img src='"+res[i].data+"'></button></li>"
         data_ul.appendChild(temp_li);
+
     }
 }
 
@@ -572,44 +576,57 @@ function second_phase_pattern_data(res){
 }
 
 function send_results_draw(userid){
-    var buttons = document.querySelectorAll('.canvasbutton');
-    socket.emit('results', {type: current_game, id: userid, count: 1});
-    for (let i = 0; i < buttons.length; i++) {
-        buttons[i].disabled = true;
+    if(!has_sent_results){
+        var buttons = document.querySelectorAll('.canvasbutton');
+        socket.emit('results', {type: current_game, id: userid, count: 1});
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].disabled = true;
+        }
+        has_sent_results = true;
     }
 }
 
 
 function send_results_fill(userid){
-    var buttons = document.querySelectorAll('.fillbutton');
-    socket.emit('results', {type:current_game, id: userid, count: 1});
-    for (let i = 0; i < buttons.length; i++) {
-        buttons[i].disabled = true;
+    if(!has_sent_results){
+        var buttons = document.querySelectorAll('.fillbutton');
+        socket.emit('results', {type:current_game, id: userid, count: 1});
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].disabled = true;
+        }
+        has_sent_results = true;
     }
 }
 
 function send_results_pattern(userid){
-    document.getElementById("done3").style.visibility = 'hidden';
-    var buttons = document.querySelectorAll('.patternbutton');
-    for (let i = 0; i < buttons.length; i++) {
-        buttons[i].disabled = true;
+    if(!has_sent_results){
+        document.getElementById("done3").style.visibility = 'hidden';
+        var buttons = document.querySelectorAll('.patternbutton');
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].disabled = true;
+        }
+        socket.emit('results', {type: current_game, id: userid, count: calculate_points()});
+        has_sent_results = true;
     }
-    socket.emit('results', {type: current_game, id: userid, count: calculate_points()});
 }
 
 function send_results_typeracer(userid){
-    socket.emit('results', {type: current_game, id: userid, count: {total: query_array.length, typed: result_array.length}});
+    if( !has_sent_results){
+        socket.emit('results', {type: current_game, id: userid, count: {total: query_array.length, typed: result_array.length}});
+        has_sent_results = true;
+    }
 }
 
 function send_results_guessdraw(userid){
-    if(artistid != myid && canusechat){
+    if(!has_sent_results){
         socket.emit('results', {type: current_game, id: userid, count: 0});
+        has_sent_results = true;
     }
 }
 
 function send_results_geomaster(userid){
-    console.log('esteila');
     socket.emit('results', {type: current_game, id: userid, count: calculate_points_geomaster()});
+    has_sent_results = true;
 }
 
 
@@ -661,7 +678,7 @@ function initialize_map_pano(promt){
         mapTypeControl: false,
         streetViewControl: false,
         rotateControl: false,
-        fullscreenControl: false});
+        fullscreenControl: false,});
     map.addListener("click", (mapsMouseEvent) => {
         addMarker(mapsMouseEvent.latLng,map);
         guesslocation = JSON.stringify(mapsMouseEvent.latLng.toJSON(), null, 2);
