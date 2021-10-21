@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+@font-face {
+    font-family: 'AGENTORANGE';
+    src: url('/ttf/AGENTORANGE.ttf');
+  }
+
+
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	background-image:  url("/imgs/b.png");
+    background-size: auto 100%;
+}
+
+h1{
+    font-size: 56px;
+    font-family: 'AGENTORANGE';
+}
+
+header{
+	text-align: center;
+	padding: 20px 0px;
+	margin-bottom: 64px;
+	border-bottom: 1px solid black;
+}
+
+.content{
+	margin: 0px auto;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.joinform{
+	display: flex;
+	flex-direction: column;
+}
+
+.joinform label,.joinform button{
+	margin: 20px 0px;
+}
+
+.joinform input[type=text]{
+	padding: 8px 8px;
+	margin: 20px 0px;
+}
+
+.joinform input[type=text]:focus{
+	outline: none;
+}

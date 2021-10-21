@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+  <link rel="stylesheet" href="css/room.css">
+  <link rel="stylesheet" href="css/games.css">
+  <title>Fakelos</title>
+</head>
+<body>
+  <header class="header">
+    <h1>Fakelos Party</h1>
+    <button id="ready" onclick="start_game()">Ready</button>
+  </header>
+  <div class="content">
+    <div id="users_div">
+      <ul id="users">
+
+      </ul>
+    </div>
+    <div id="main_area">
+      <div class="upper_div">
+        <label id="promt"></label>
+        <label id="timer">0</label>
+      </div>
+      <div id="utils">
+        <div id="game_draw">
+          <div id="buttons"> 
+            <ul class="colorbuttons">
+              <button onclick="change_color('#ED1919')" style="background: #ED1919"></button>
+              <button onclick="change_color('#183FFF')" style="background: #183FFF"></button>
+              <button onclick="change_color('#FFAA00')" style="background: #FFAA00"></button>
+              <button onclick="change_color('#DF18FF')" style="background: #DF18FF"></button>
+              <button onclick="change_color('#F4FF18')" style="background: #F4FF18"></button>
+              <button onclick="change_color('#8D04FF')" style="background: #8D04FF"></button>
+              <button onclick="change_color('#29FF18')" style="background: #29FF18"></button>
+              <button onclick="change_color('#000000')" style="background: #000000"></button>
+              <button onclick="change_color('#00BC09')" style="background: #00BC09"></button>
+              <button onclick="change_color('#FFFFFF')" style="background: #FFFFFF"></button>
+              <button onclick="change_color('#18F5FF')" style="background: #18F5FF"></button>
+              <button onclick="change_color('#BDBDBD')" style="background: #BDBDBD"></button>
+            </ul>
+            <ul class="alsobuttons">
+              <button onclick="change_line_width(16)"><img src="imgs/16.png"></button>
+              <button onclick="change_line_width(10)"><img src="imgs/12.png"></button>
+              <button onclick="change_line_width(4)"><img src="imgs/8.png"></button>
+              <button onclick="change_line_width(2)"><img src="imgs/4.png"></button>
+            </ul>
+            <ul class='specificbuttons'>
+              <button id="trash" onclick="clear_canvas()"><img src="imgs/clear.png"></button>
+              <button id="trash" onclick="change_color('#FFFFFF')"><img src="imgs/eraser.png"></button>
+            </ul>
+            <div id="util_buttons">
+              <button id="done" onclick="end_phase_one()">Done</button>
+            </div>
+          </div>
+          <div id="canvas_div">
+            <canvas id="canvas"></canvas>
+          </div>
+        </div>
+        <div id="second_panel">
+          <ul id="data_ul">
+            
+          </ul>
+        </div>
+        <div id="game_fill">
+          <label id="fill_blank">Fill the blank in the sentence at the top.</label>
+          <input type='text' id="fill_input" maxlength="60">
+          <button id="done2" onclick="end_phase_one()">Done</button>
+        </div>
+        <div id="game_pattern">
+          <table id="pattern">
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </table>
+        </div>
+        <div id="game_typeracer">
+          <ul id="typeracer_ul"></ul>
+          <form id='typeracer_form'>
+            <input type="text" id="typeracer_input" placeholder="Guess as many words as possible.." required autocomplete="off">
+          </form>
+        </div>
+        <div id="game_geomaster">
+          <div id='pano'>
+          </div>
+          <div id='map'>
+
+          </div>
+          <button id="done4" onclick="end_phase_one()">Done</button>
+        </div>
+      </div>
+    </div>  
+    <div id="chat_area">
+      <ul id="chatlog">
+
+      </ul>
+      <form id="chat">
+        <input type="text" id="msg" placeholder="Write your message here.." required autocomplete="off">
+      </form>
+    </div>
+  </div>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAr-WXeLj6rn8o8rm5Q2K5sOBgE8o9AXQs&v=weekly" async></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.2/qs.min.js" integrity="sha256-TDxXjkAUay70ae/QJBEpGKkpVslXaHHayklIVglFRT4=" crossorigin="anonymous"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
