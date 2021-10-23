@@ -142,6 +142,8 @@ input[type=text]{
     display: flex;
     flex-wrap: wrap;
     list-style-type: none;
+    align-items: center;
+    position: relative;
 }
 
 .canvasli,.fillli{
@@ -210,7 +212,7 @@ input[type=text]{
   }
 
 .resultsli{
-    margin: 16px 0px;
+    margin: 8px 0px;
     font-size: 18px;
 }
 
@@ -218,8 +220,9 @@ input[type=text]{
 .minitable{
     border-spacing: 0;
     border-collapse: collapse;
-    margin-top: 32px;
+    margin-top: 16px;
     max-height: 216px;
+    max-width: 216px;
 }
 
 .minitable td{
@@ -227,4 +230,28 @@ input[type=text]{
     border: 1px solid black;
     width: 36px;
     height: 36px;
+}
+
+.templabel{
+    font-size: 24px;
+    margin-bottom: 32px;
+}
+
+.tempul{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.tempdiv{
+    display: flex;
+    flex-direction: column;
+    margin: 8px;
+}
+
+#mapdiv{
+    width: 720px;
+    height: 480px;
+    border: 1px solid black;
+    position: absolute;
+    bottom: 0;
 }

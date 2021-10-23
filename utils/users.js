@@ -71,13 +71,13 @@ function send_results(room,data){
                 break;
             }
             else{
-                temp_room.results.push({user: get_user(data.id),count: data.count })
+                temp_room.results.push({user: get_user(data.id),count: data.count , data: data.data})
                 break;
             }
         }
     }
     else{
-        temp_room.results.push({user: get_user(data.id),count: data.count })
+        temp_room.results.push({user: get_user(data.id),count: data.count, data: data.data })
     }  
 }
 
@@ -108,7 +108,7 @@ function allocate_points(array,type,roomid){
         var temppoints = 900;
         for(let i = 0; i < array.length; i++){
             user_points(array[i].user, temppoints);
-            return_array.push({user: array[i].user, points: {plus: temppoints, minus: 0, bonus: 0}})
+            return_array.push({user: array[i].user, points: {plus: temppoints, minus: 0, bonus: 0},data: array[i].data})
             temppoints -= 160;
         }
     }
@@ -129,7 +129,7 @@ function allocate_points(array,type,roomid){
         }
         else if(type == 3){
             user_points(array[i].user, array[i].count.correct * 100 - (array[i].count.selected - array[i].count.correct) * 80);
-            return_array.push({user: array[i].user, points: {plus: array[i].count.correct * 100, minus: (array[i].count.selected - array[i].count.correct) * 80, bonus: 0}})
+            return_array.push({user: array[i].user, points: {plus: array[i].count.correct * 100, minus: (array[i].count.selected - array[i].count.correct) * 80, bonus: 0},data: array[i].data})
         }
         else if(type == 4){
             user_points(array[i].user, array[i].count.typed * 100 - (array[i].count.total - array[i].count.typed) * 40);

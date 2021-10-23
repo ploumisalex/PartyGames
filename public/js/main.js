@@ -46,7 +46,6 @@ var result_array = [];
 var myid = '';
 var current_word = '';
 var artistid = '';
-var latlongarray = [];
 var guesslocation = {lat: 256, lng: 256};
 var querylocation;
 var has_sent_results = false;
@@ -70,7 +69,7 @@ chat.submit((e)=>{
             if(msg == current_word){
                 canusechat = false;
                 socket.emit('guessed_correctly', {type: current_game, id: artistid, count: 1})
-                socket.emit('results', {type: current_game, id: myid, count:  1});
+                socket.emit('results', {type: current_game, id: myid, count:  1,data: ''});
             }
         }
         socket.emit('client_message', msg);
@@ -132,6 +131,12 @@ socket.on('results', (data) =>{
     promt_label.html('Results of the previous round');
     set_visibility(second_panel);
     data_ul.css('flexDirection','column');
+    if(current_game == 5){
+        var templabel = document.createElement('label');
+        templabel.classList.add('templabel');
+        templabel.innerHTML = 'The word was: <b>'+ current_word+'</b> .';
+        data_ul.append(templabel);
+    }
     for(let i = 0; i < data.results.length; i++){
         var temp_li = document.createElement('li');
         if(data.results[i].points.bonus != 0 && data.results[i].points.minus != 0){
@@ -142,14 +147,18 @@ socket.on('results', (data) =>{
             temp_li.innerHTML = "<li class='resultsli'><label><b>"+ data.results[i].user.username +"</b> +"+ data.results[i].points.plus +" -"+  data.results[i].points.minus+"</label></li>"; 
         }
         else{
-            temp_li.innerHTML = "<li class='resultsli'><label><b>"+ data.results[i].user.username +"<b> +"+ data.results[i].points.plus +"</label></li>";
+            temp_li.innerHTML = "<li class='resultsli'><label><b>"+ data.results[i].user.username +"</b> +"+ data.results[i].points.plus +"</label></li>";
         }
         data_ul.append(temp_li);
     }
     if(current_game == 3){
         fill_mini_pattern_table();
+        fill_mini_pattern_tables(data);
     }
-    start_timer(5, ()=>{
+    else if(current_game == 6){
+        create_results_map(data);
+    }
+    start_timer(10, ()=>{
         socket.emit('start_round');
     });
 })
@@ -165,37 +174,37 @@ socket.on('start_round',(promt)=>{
     current_game = promt.type;
     if(promt.type == 1){
         promt_label.html("Next Round: Draw my thing!");
-        start_timer(3,()=>{
+        start_timer(5,()=>{
             start_round_draw(promt);
         });
     }
     else if(promt.type == 2){
         promt_label.html("Next Round: Fill the blank!");
-        start_timer(3,()=>{
+        start_timer(5,()=>{
             start_round_fill(promt);
         });
     }
     else if(promt.type == 3){
         promt_label.html("Next Round: Memorize the pattern!");
-        start_timer(3,()=>{
+        start_timer(5,()=>{
             start_round_pattern(promt);
         });
     }
     else if(promt.type == 4){
         promt_label.html("Next Round: Typeracer!");
-        start_timer(3,()=>{
+        start_timer(5,()=>{
             start_round_typeracer(promt);
         });
     }
     else if(promt.type == 5){
         promt_label.html("Next Round: Guess the drawing! Player <b>" + promt.query.user.username + "</b> is drawing.");
-        start_timer(3,()=>{
+        start_timer(5,()=>{
             start_round_guessdraw(promt);
         });
     }
     else if(promt.type == 6){
         promt_label.html("Next Round: Geomaster");
-        start_timer(3,()=>{
+        start_timer(5,()=>{
             start_round_geomaster(promt);
         });
     }
@@ -216,7 +225,6 @@ function second_phase_data(res){
 }
 
 function end_phase_one(){
-    set_visibility(second_panel);
     clearInterval(t);
     if(current_game == 1){
         $('#done').css('visibility','hidden');
@@ -298,6 +306,35 @@ function fill_mini_pattern_table(){
     }
     data_ul.append(temptable);
 }
+
+function fill_mini_pattern_tables(array){
+    var tempul = document.createElement('ul');
+    tempul.classList.add('tempul');
+    for(let k = 0; k < array.results.length; k++){
+        var tempdiv = document.createElement('div');
+        tempdiv.classList.add('tempdiv');
+        var temptable2 = document.createElement('table');
+        temptable2.classList.add('minitable');
+        for(let i = 0; i < 6; i++){
+            var temptr = document.createElement('tr');
+            temptable2.appendChild(temptr);
+            for(let j = 0; j < 6; j++){
+                var temptd = document.createElement('td');
+                if(array.results[k].data.includes(i * 6 + j)){
+                    temptd.classList.add('black');
+                }
+                temptable2.appendChild(temptd);
+            }
+        }
+        tempdiv.appendChild(temptable2);
+        var templabel = document.createElement('label');
+        templabel.innerHTML = '<b>' + array.results[k].user.username + '</b>';
+        tempdiv.appendChild(templabel);
+        tempul.appendChild(tempdiv);
+    }
+    data_ul.append(tempul);
+}
+
 
 function push_cell(num){
     var temp = document.querySelectorAll('.patternbutton');
@@ -482,7 +519,7 @@ function start_round_draw(promt){
     ctx.lineWidth = 8;
     set_visibility(game_draw);
     drawing = true;
-    start_timer(60,end_phase_one);
+    start_timer(90,end_phase_one);
 }
 
 function start_round_fill(promt){
@@ -531,7 +568,7 @@ function start_round_guessdraw(promt){
         drawing = true;
         canusechat = false;
         document.getElementById("buttons").style.visibility = 'visible';
-        socket.emit('results', {type: current_game, id: myid, count: 0});
+        socket.emit('results', {type: current_game, id: myid, count: 0,data: ''});
         has_sent_results = true;
     }
     else{
@@ -599,7 +636,7 @@ function second_phase_pattern_data(res){
 function send_results_draw(userid){
     if(!has_sent_results){
         var buttons = document.querySelectorAll('.canvasbutton');
-        socket.emit('results', {type: current_game, id: userid, count: 1});
+        socket.emit('results', {type: current_game, id: userid, count: 1, data: ''});
         for (let i = 0; i < buttons.length; i++) {
             buttons[i].disabled = true;
         }
@@ -611,7 +648,7 @@ function send_results_draw(userid){
 function send_results_fill(userid){
     if(!has_sent_results){
         var buttons = document.querySelectorAll('.fillbutton');
-        socket.emit('results', {type:current_game, id: userid, count: 1});
+        socket.emit('results', {type:current_game, id: userid, count: 1, data: ''});
         for (let i = 0; i < buttons.length; i++) {
             buttons[i].disabled = true;
         }
@@ -626,27 +663,27 @@ function send_results_pattern(userid){
         for (let i = 0; i < buttons.length; i++) {
             buttons[i].disabled = true;
         }
-        socket.emit('results', {type: current_game, id: userid, count: calculate_points()});
+        socket.emit('results', {type: current_game, id: userid, count: calculate_points(),data: result_array});
         has_sent_results = true;
     }
 }
 
 function send_results_typeracer(userid){
     if( !has_sent_results){
-        socket.emit('results', {type: current_game, id: userid, count: {total: query_array.length, typed: result_array.length}});
+        socket.emit('results', {type: current_game, id: userid, count: {total: query_array.length, typed: result_array.length}, data: ''});
         has_sent_results = true;
     }
 }
 
 function send_results_guessdraw(userid){
     if(!has_sent_results){
-        socket.emit('results', {type: current_game, id: userid, count: 0});
+        socket.emit('results', {type: current_game, id: userid, count: 0,data: ''});
         has_sent_results = true;
     }
 }
 
 function send_results_geomaster(userid){
-    socket.emit('results', {type: current_game, id: userid, count: calculate_points_geomaster()});
+    socket.emit('results', {type: current_game, id: userid, count: calculate_points_geomaster(),data: guesslocation});
     has_sent_results = true;
 }
 
@@ -695,7 +732,7 @@ let markers = [];
 function initialize_map_pano(promt){
     var map = new google.maps.Map(document.getElementById("map"), {
         center: { lat: 20, lng: 0 },
-        zoom: 3,
+        zoom: 2,
         mapTypeControl: false,
         streetViewControl: false,
         rotateControl: false,
@@ -722,6 +759,7 @@ function initialize_map_pano(promt){
 }
 
 function calculate_points_geomaster(){
+    quesslocation = JSON.parse(guesslocation);
     return (Math.abs(querylocation.lat - guesslocation.lat) + Math.abs(querylocation.lng - guesslocation.lng));
 }
 
@@ -737,3 +775,39 @@ function addMarker(position,map) {
     markers.push(marker);
     markers[0].setMap(map);
   }
+
+
+function create_results_map(array){
+    var mapdiv = document.createElement('div');
+    mapdiv.id = 'mapdiv';
+    var map = new google.maps.Map(mapdiv, {
+        center: { lat: querylocation.lat, lng: querylocation.lng },
+        zoom: 2,
+        mapTypeControl: false,
+        streetViewControl: false,
+        rotateControl: false,
+        fullscreenControl: false,});
+    
+        addMarkerStyle(querylocation,map,'true');
+    for(let i=0;i < array.results.length; i ++){
+        addMarkerStyle(JSON.parse(array.results[i].data),map,array.results[i].user.username.charAt(0));
+    }
+    data_ul.append(mapdiv);
+
+}
+
+function addMarkerStyle(location,map,style){
+    if(style == 'true'){
+        const marker = new google.maps.Marker({
+            position: location,
+            icon: '../imgs/target.png',
+            map: map,
+          });
+    }else{
+        const marker = new google.maps.Marker({
+            position: location,
+            label: style,
+            map: map,
+          });
+    }
+}
