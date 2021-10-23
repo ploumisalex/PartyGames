@@ -1,25 +1,25 @@
 const socket = io();
 
-const chat = document.getElementById("chat");
-const chatul = document.getElementById("chatlog");
-const timer = document.getElementById("timer");
-const usersul = document.getElementById("users");
-const promt_label = document.getElementById("promt");
-const data_ul = document.getElementById("data_ul");
-const second_panel = document.getElementById("second_panel");
-second_panel.style.display = 'none';
-const game_fill = document.getElementById("game_fill");
-game_fill.style.display = 'none';
-const game_draw = document.getElementById("game_draw");
-game_draw.style.display = 'none';
-const game_pattern = document.getElementById("game_pattern");
-game_pattern.style.display = 'none';
-const game_typeracer = document.getElementById("game_typeracer");
-game_typeracer.style.display = 'none';
-const game_geomaster = document.getElementById("game_geomaster");
-game_geomaster.style.display = 'none';
-const typeracer_ul = document.getElementById("typeracer_ul");
-const typeracer_form = document.getElementById("typeracer_form");
+const chat = $('#chat');
+const chatul = $('#chatlog');
+const timer = $('#timer');
+const usersul = $('#users');
+const promt_label = $('#promt');
+const data_ul = $('#data_ul');
+const second_panel = $('#second_panel');
+second_panel.css("display", "none");
+const game_fill = $('#game_fill');
+game_fill.css("display", "none");
+const game_draw = $('#game_draw');
+game_draw.css("display", "none");
+const game_pattern = $('#game_pattern');
+game_pattern.css("display", "none");
+const game_typeracer = $('#game_typeracer');
+game_typeracer.css("display", "none");
+const game_geomaster = $('#game_geomaster');
+game_geomaster.css("display", "none");
+const typeracer_ul = document.getElementById('typeracer_ul');
+const typeracer_form = $('#typeracer_form');
 const typeracer_input = document.getElementById("typeracer_input");
 
 const canvas = document.getElementById("canvas");
@@ -59,10 +59,10 @@ const {username,room} = Qs.parse(location.search,{
 function outputMessage(data){
     const templi = document.createElement('li');
     templi.innerHTML = "<li class='chatli'><label>"+ data.username +":</label><span>" + data.msg + "</span></li>"
-    chatul.appendChild(templi);
+    chatul.append(templi);
 }
 
-chat.addEventListener('submit', (e)=>{
+chat.submit((e)=>{
     e.preventDefault();
     if(canusechat){
         const msg = e.target.elements.msg.value;
@@ -79,7 +79,7 @@ chat.addEventListener('submit', (e)=>{
     }
 })
 
-typeracer_form.addEventListener('submit', (e)=>{
+typeracer_form.submit((e)=>{
     e.preventDefault();
     const word = e.target.elements.typeracer_input.value;
     if(query_array.includes(word) && !result_array.includes(word)){
@@ -93,23 +93,24 @@ typeracer_form.addEventListener('submit', (e)=>{
 
 function start_timer(seconds,callfunction){
     clearInterval(t)
-    timer.innerHTML = seconds;
+    timer.html(seconds);
     t = setInterval(function(){
-        timer.innerHTML -= 1;
-        if (timer.innerHTML < 0){
+        timer.html(timer.html() - 1);
+        if (timer.html() < 0){
             clearInterval(t);
+            timer.html(0);
             callfunction();
         }
     }, 1000);
 }
 
 socket.on('room_users', (data) =>{
-    usersul.innerHTML = '';
+    usersul.html('');
     var pointsimg = '/imgs/omegalul.png';
     for (let i = 0; i < data.users.length; i++) {    
         const user = document.createElement("li");
         user.innerHTML = "<li class='usersli'><div><label>"+ data.users[i].username +"</label><p>"+data.users[i].points +" Points</p></div><img src="+pointsimg+"></li>";
-        usersul.appendChild(user);
+        usersul.append(user);
     }
 })
 
@@ -121,16 +122,16 @@ socket.on('message', (data)=>{
 socket.emit('join_room', {username,room});
 
 function start_game(){
-    document.getElementById("ready").style.visibility = 'hidden';
+    $('#ready').css('visibility','hidden')
     socket.emit('start_game');
 }
 
 socket.on('results', (data) =>{
     canusechat = true;
-    data_ul.innerHTML = '';
-    promt_label.innerHTML = 'Results of the previous round';
+    data_ul.html('');
+    promt_label.html('Results of the previous round');
     set_visibility(second_panel);
-    data_ul.style.flexDirection = 'column';
+    data_ul.css('flexDirection','column');
     for(let i = 0; i < data.results.length; i++){
         var temp_li = document.createElement('li');
         if(data.results[i].points.bonus != 0 && data.results[i].points.minus != 0){
@@ -143,55 +144,57 @@ socket.on('results', (data) =>{
         else{
             temp_li.innerHTML = "<li class='resultsli'><label><b>"+ data.results[i].user.username +"<b> +"+ data.results[i].points.plus +"</label></li>";
         }
-        data_ul.appendChild(temp_li);
+        data_ul.append(temp_li);
     }
-    start_timer(3, ()=>{
+    if(current_game == 3){
+        fill_mini_pattern_table();
+    }
+    start_timer(5, ()=>{
         socket.emit('start_round');
     });
 })
 
 socket.on('start_second_phase', (res)=>{
-    timer.innerHTML ='';
-    set_visibility(second_panel);
+    timer.html('');
     second_phase_data(res);
 })
 
 socket.on('start_round',(promt)=>{
-    second_panel.style.display = 'none';
+    second_panel.css("display", "none");
     has_sent_results = false;
     current_game = promt.type;
     if(promt.type == 1){
-        promt_label.innerHTML = "Next Round: Draw my thing!";
+        promt_label.html("Next Round: Draw my thing!");
         start_timer(3,()=>{
             start_round_draw(promt);
         });
     }
     else if(promt.type == 2){
-        promt_label.innerHTML = "Next Round: Fill the blank!";
+        promt_label.html("Next Round: Fill the blank!");
         start_timer(3,()=>{
             start_round_fill(promt);
         });
     }
     else if(promt.type == 3){
-        promt_label.innerHTML = "Next Round: Memorize the pattern!";
+        promt_label.html("Next Round: Memorize the pattern!");
         start_timer(3,()=>{
             start_round_pattern(promt);
         });
     }
     else if(promt.type == 4){
-        promt_label.innerHTML = "Next Round: Typeracer!";
+        promt_label.html("Next Round: Typeracer!");
         start_timer(3,()=>{
             start_round_typeracer(promt);
         });
     }
     else if(promt.type == 5){
-        promt_label.innerHTML = "Next Round: Guess the drawing! Player <b>" + promt.query.user.username + "</b> is drawing.";
+        promt_label.html("Next Round: Guess the drawing! Player <b>" + promt.query.user.username + "</b> is drawing.");
         start_timer(3,()=>{
             start_round_guessdraw(promt);
         });
     }
     else if(promt.type == 6){
-        promt_label.innerHTML = "Next Round: Geomaster";
+        promt_label.html("Next Round: Geomaster");
         start_timer(3,()=>{
             start_round_geomaster(promt);
         });
@@ -199,7 +202,8 @@ socket.on('start_round',(promt)=>{
 })
 
 function second_phase_data(res){
-    data_ul.innerHTML = '';
+    set_visibility(second_panel);
+    data_ul.html('');
     if(current_game == 1){
         second_phase_draw_data(res);
     }
@@ -215,13 +219,13 @@ function end_phase_one(){
     set_visibility(second_panel);
     clearInterval(t);
     if(current_game == 1){
-        document.getElementById("done").style.visibility = 'hidden';
+        $('#done').css('visibility','hidden');
         drawing = false;   
         const canvas_data = canvas.toDataURL();
         socket.emit('end_phase_one', canvas_data);
     }
     else if(current_game == 2){
-        document.getElementById("done2").style.visibility = 'hidden';
+        $('#done2').css('visibility','hidden');
         const fill_data = document.getElementById('fill_input').value;
         socket.emit('end_phase_one', fill_data);
     }
@@ -276,6 +280,23 @@ function fill_pattern_table(arr){
             cells[i].classList.add('black');
         }
     }
+}
+
+function fill_mini_pattern_table(){
+    var temptable = document.createElement('table');
+    temptable.classList.add('minitable');
+    for(let i = 0; i < 6; i++){
+        var temptr = document.createElement('tr');
+        temptable.appendChild(temptr);
+        for(let j = 0; j < 6; j++){
+            var temptd = document.createElement('td');
+            if(query_array.includes(i * 6 + j)){
+                temptd.classList.add('black');
+            }
+            temptable.appendChild(temptd);
+        }
+    }
+    data_ul.append(temptable);
 }
 
 function push_cell(num){
@@ -403,80 +424,80 @@ socket.on('connect', () => {
 
  function set_visibility(panel){
      if( panel == second_panel){
-        game_draw.style.display = 'none';
-        game_fill.style.display = 'none';
-        game_pattern.style.display = 'none';
-        game_typeracer.style.display = 'none';
-        game_geomaster.style.display = 'none';
-        second_panel.style.display = 'flex';
+        game_draw.css("display", "none");
+        game_fill.css("display", "none");
+        game_pattern.css("display", "none");
+        game_typeracer.css("display", "none");
+        game_geomaster.css("display", "none");
+        second_panel.css("display", "flex");
      }
      else if(panel == game_draw){
-        game_draw.style.display = 'flex';
-        document.getElementById("done").style.visibility = 'visible';
-        game_fill.style.display = 'none';
-        game_pattern.style.display = 'none';
-        game_typeracer.style.display = 'none';
-        game_geomaster.style.display = 'none';
-        second_panel.style.display = 'none';
+        game_draw.css("display", "flex");
+        $('#done').css('visibility','visible');
+        game_fill.css("display", "none");
+        game_pattern.css("display", "none");
+        game_typeracer.css("display", "none");
+        game_geomaster.css("display", "none");
+        second_panel.css("display", "none");
      }
      else if( panel == game_fill){
-        game_draw.style.display = 'none';
-        game_fill.style.display = 'flex';
-        document.getElementById("done2").style.visibility = 'visible';
-        game_pattern.style.display = 'none';
-        game_typeracer.style.display = 'none';
-        game_geomaster.style.display = 'none';
-        second_panel.style.display = 'none';
+        game_draw.css("display", "none");
+        game_fill.css("display", "flex");
+        $('#done2').css('visibility','visible');
+        game_pattern.css("display", "none");
+        game_typeracer.css("display", "none");
+        game_geomaster.css("display", "none");
+        second_panel.css("display", "none");
      }
      else if(panel == game_pattern){
-        game_draw.style.display = 'none';
-        game_fill.style.display = 'none';
-        game_pattern.style.display = 'flex';
-        game_typeracer.style.display = 'none';
-        game_geomaster.style.display = 'none';
-        second_panel.style.display = 'none';
+        game_draw.css("display", "none");
+        game_fill.css("display", "none");
+        game_pattern.css("display", "flex");
+        game_typeracer.css("display", "none");
+        game_geomaster.css("display", "none");
+        second_panel.css("display", "none");
      }
      else if(panel == game_typeracer){
-        game_draw.style.display = 'none';
-        game_fill.style.display = 'none';
-        game_pattern.style.display = 'none';
-        game_typeracer.style.display = 'flex';
-        game_geomaster.style.display = 'none';
-        second_panel.style.display = 'none';
+        game_draw.css("display", "none");
+        game_fill.css("display", "none");
+        game_pattern.css("display", "none");
+        game_typeracer.css("display", "flex");
+        game_geomaster.css("display", "none");
+        second_panel.css("display", "none");
      }
      else if(panel == game_geomaster){
-        game_draw.style.display = 'none';
-        game_fill.style.display = 'none';
-        game_pattern.style.display = 'none';
-        game_typeracer.style.display = 'none';
-        game_geomaster.style.display = 'flex';
-        second_panel.style.display = 'none';
+        game_draw.css("display", "none");
+        game_fill.css("display", "none");
+        game_pattern.css("display", "none");
+        game_typeracer.css("display", "none");
+        game_geomaster.css("display", "flex");
+        second_panel.css("display", "none");
      }
  }
 
 function start_round_draw(promt){
-    promt_label.innerHTML = promt.query;
+    promt_label.html(promt.query);
     clear_canvas();
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 8;
     set_visibility(game_draw);
     drawing = true;
-    start_timer(10,end_phase_one);
+    start_timer(60,end_phase_one);
 }
 
 function start_round_fill(promt){
-    promt_label.innerHTML = promt.query;
+    promt_label.html(promt.query);
     document.getElementById('fill_input').value = '';
     set_visibility(game_fill);
-    start_timer(10,end_phase_one);
+    start_timer(20,end_phase_one);
 }
 
 function start_round_pattern(promt){
     clear_pattern_table();
     result_array = [];
-    promt_label.innerHTML = 'Try to remember the pattern shown bellow!';
+    promt_label.html('Try to remember the pattern shown bellow!');
     set_visibility(game_pattern);
-    start_timer(5,end_phase_one);
+    start_timer(10,end_phase_one);
     fill_pattern_table(promt.query);
 }
 
@@ -484,7 +505,7 @@ function start_round_typeracer(promt){
     typeracer_ul.innerHTML = '';
     typeracer_input.innerHTML = '';
     result_array = [];
-    promt_label.innerHTML = 'Type as many words from the list below as possible!';
+    promt_label.html('Type as many words from the list below as possible!');
     set_visibility(game_typeracer);
     start_timer(20,end_phase_one);
     query_array = promt.query;
@@ -506,7 +527,7 @@ function start_round_guessdraw(promt){
     set_visibility(game_draw);
     start_timer(90,end_phase_one);
     if(myid == artistid){
-        promt_label.innerHTML = promt.query.word;
+        promt_label.html(promt.query.word);
         drawing = true;
         canusechat = false;
         document.getElementById("buttons").style.visibility = 'visible';
@@ -518,47 +539,47 @@ function start_round_guessdraw(promt){
         for(let i = 0; i< promt.query.word.length ;i ++){
             tempword.push('_');
         }
-        promt_label.innerHTML = tempword.join(' ');
+        promt_label.html(tempword.join(' '));
         drawing = false;
         document.getElementById("buttons").style.visibility = 'hidden';
         ctx.beginPath();
     }
-    document.getElementById("done").style.visibility = 'hidden';
+    $('#done').css('visibility','hidden');
 }
 
 function start_round_geomaster(promt){
     set_visibility(game_geomaster);
     guesslocation = {lat: 256, lng: 256};
     querylocation = promt.query;
-    promt_label.innerHTML = 'Guess where in the world is the current location!';
+    promt_label.html('Guess where in the world is the current location!');
     initialize_map_pano(promt);
     start_timer(60,end_phase_one);
 }
 
 
 function second_phase_draw_data(res){
-    data_ul.style.flexDirection = "row";
+    data_ul.css('flexDirection','row');
     for(let i = 0; i < res.length; i++){
         let temp_li = document.createElement('li');
         let temp_button_onclick = "send_res('"+ res[i].user +"')";
         temp_li.innerHTML = "<li class='canvasli'><button class='canvasbutton' onclick="+temp_button_onclick+"><img src='"+res[i].data+"'></button></li>"
-        data_ul.appendChild(temp_li);
+        data_ul.append(temp_li);
 
     }
 }
 
 function second_phase_fill_data(res){
-    data_ul.style.flexDirection = "column";
+    data_ul.css('flexDirection','column');
     for(let i = 0; i < res.length; i++){
         let temp_li = document.createElement('li');
         let temp_button_onclick = "send_res('"+ res[i].user +"')";
         temp_li.innerHTML = "<li class='fillli'><button class='fillbutton' onclick="+temp_button_onclick+"><p>"+res[i].data+"</p></button></li>"
-        data_ul.appendChild(temp_li);
+        data_ul.append(temp_li);
     }
 }
 
 function second_phase_pattern_data(res){
-    data_ul.style.flexDirection = "column";
+    data_ul.css('flexDirection','column');
     let table = document.createElement('ul');
     table.classList.add('table_js');
     for(let i = 0; i < 36; i++){
@@ -567,12 +588,12 @@ function second_phase_pattern_data(res){
         temp_b.onclick = ()=>{push_cell(i)};
         table.appendChild(temp_b);
     }
-    data_ul.appendChild(table);
+    data_ul.append(table);
     let done3 = document.createElement('button');
     done3.id = 'done3';
     done3.textContent = 'Done';
     done3.onclick = ()=>{send_res(myid)};
-    data_ul.appendChild(done3);
+    data_ul.append(done3);
 }
 
 function send_results_draw(userid){
@@ -600,7 +621,7 @@ function send_results_fill(userid){
 
 function send_results_pattern(userid){
     if(!has_sent_results){
-        document.getElementById("done3").style.visibility = 'hidden';
+        $('#done3').css('visibility','hidden');
         var buttons = document.querySelectorAll('.patternbutton');
         for (let i = 0; i < buttons.length; i++) {
             buttons[i].disabled = true;

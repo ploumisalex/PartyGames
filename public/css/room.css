@@ -214,3 +214,17 @@ input[type=text]{
     font-size: 18px;
 }
 
+
+.minitable{
+    border-spacing: 0;
+    border-collapse: collapse;
+    margin-top: 32px;
+    max-height: 216px;
+}
+
+.minitable td{
+    background: white;
+    border: 1px solid black;
+    width: 36px;
+    height: 36px;
+}
