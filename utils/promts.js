@@ -23,7 +23,7 @@ const LATLONGVALIDARRAY = [{lat: 36.1028,lng: -119.5814},{lat: 58.5817,lng: 13.7
 
 function random_promt(roomid){
     var temp = Math.floor((Math.random() * 6) + 1);
-    //var temp = 6;
+    //var temp = 1;
     switch (temp){
         case 1:
             return {type: temp, query: promts[Math.floor(Math.random() * promts.length)]};

@@ -4,12 +4,13 @@
 
 #game_draw,#game_pattern,#game_typeracer,#game_geomaster{
     display: flex;
-    padding-left:8px;
-    flex: 6;
+    width: 1120px;
+    height: 656px;
 }
 
 #canvas_div{
-    flex: 8;
+    width: 960px;
+    height: 656px;
 }
 
 #canvas{
@@ -23,12 +24,12 @@
 }
 
 #buttons{
-    flex: 1;
+    width: 160px;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    margin: 0px 8px;
     height: 100%;
+    padding-right: 8px;
 }
 
 .colorbuttons{
@@ -115,7 +116,8 @@
     display: flex;
     flex-direction: column;
     padding-left:16px;
-    flex: 6;
+    width: 1120px;
+    height: 656px;
 }
 
 #fill_blank{
@@ -132,8 +134,9 @@
 #game_pattern{
     display: flex;
     padding-left:8px;
-    flex: 6;
+    width: 1120px;
     justify-content: center;
+    height: 656px;
 }
 
 #pattern{
@@ -183,9 +186,9 @@ td{
     display: flex;
     flex-direction: column;
     padding-left:8px;
-    flex: 6;
+    width: 1120px;
     align-items: center;
-    width: 100%;
+    height: 656px;
 }
 
 #typeracer_form{
@@ -234,6 +237,8 @@ td{
 #game_geomaster{
     display: flex;
     position: relative;
+    width: 1120px;
+    height: 656px;
 }
 #pano{
     height: 100%;

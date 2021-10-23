@@ -21,7 +21,7 @@ header{
     margin-bottom: 8px;
 }
 h1{
-    font-size: 56px;
+    font-size: 40px;
     font-family: 'AGENTORANGE';
 }
 
@@ -29,7 +29,7 @@ h1{
 	margin: 0px auto;
 	display: flex;
     width: 1600px;
-    padding: 0px 16px;
+    height: 720px;
 }
 
 input[type=text]{
@@ -64,24 +64,23 @@ input[type=text]{
 }
 
 #main_area{
-    flex: 4;
     display: flex;
     flex-direction: column;
-    min-width: 720px;
+    width: 1120px;
     height: 720px;
 }
 
 #chat_area{
-    flex: 1;
+    width: 240px;
     height: 720px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    margin-left: 8px;
+    padding-left: 8px;
 }
 
 .chatli{
-    padding: 8px 8px;
+    padding: 8px 4px;
     display: flex;
 }
 
@@ -100,7 +99,8 @@ input[type=text]{
     background: white;
     border-radius: 4px;
     margin-bottom: 4px;
-    padding: 8px 0px;
+    width: 1120px;
+    height: 60px;
     border: 1px solid #767676;
 }
 
@@ -152,7 +152,7 @@ input[type=text]{
 
 .canvasli img{
     width: 400px;
-    height: 290px;
+    height: 272px;
 }
 
 .canvasbutton,.fillbutton{
@@ -163,8 +163,8 @@ input[type=text]{
 }
 
 #users_div{
-    flex: 1;
-    margin-right: 8px;
+    width: 240px;
+    padding-right: 8px;
 }
 
 .usersli{

@@ -28,8 +28,8 @@ const ctx = canvas.getContext("2d");
 var painting = document.getElementById("canvas_div");
 var painting_style = getComputedStyle(painting);
 
-canvas.height = 658; //parseInt(painting_style.getPropertyValue('height'));
-canvas.width = 905; //parseInt(painting_style.getPropertyValue('width'));
+canvas.height = 656; 
+canvas.width = 960; 
 
 
 var mouse = {x: 0,y: 0};
