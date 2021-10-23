@@ -174,6 +174,7 @@ socket.on('start_round',(promt)=>{
     current_game = promt.type;
     if(promt.type == 1){
         promt_label.html("Next Round: Draw my thing!");
+        promt_label.slideUp(500);
         start_timer(5,()=>{
             start_round_draw(promt);
         });
