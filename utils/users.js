@@ -6,7 +6,8 @@ function user_join(idvar,usernamevar,roomid){
         id: idvar,
         username: usernamevar,
         room: roomid,
-        points: 0
+        points: 0,
+        alreadyemitted: false
     }
     var room_exists = false;
     for(let i = 0; i< rooms.length; i++){
@@ -23,9 +24,16 @@ function user_join(idvar,usernamevar,roomid){
             results: [],
             rounds: 10,
             rounds_left: 10,
-            round_type: 0
+            round_type: null,
+            gamestarted: false
         }
         rooms.push(temp);
+    }
+    else{
+        const roomvar = get_room_by_id(roomid);
+        if(roomvar.gamestarted){
+            increase_room_emits(roomvar.room_id);
+        }
     }
     users.push(user);
     return user;
@@ -36,7 +44,9 @@ function get_user(id){
 }
 
 function user_points(user,points){
-    user.points += points;
+    if(user){
+        user.points += points;
+    }
 }
 
 function user_leave(id){
@@ -59,26 +69,50 @@ function increase_room_emits(room){
     }
 }
 
+function decrease_room_emits(roomid,user){
+    for(let i = 0; i< rooms.length; i++){
+        if(rooms[i].room_id == roomid){
+            rooms[i].emits -= 1;
+            break;
+        }
+    }
+}
+
+function user_emitted(userid){
+    const user = get_user(userid);
+
+    user.alreadyemitted = true;
+}
+
+function users_emitted_false(roomid){
+    const data = get_room_users(roomid);
+    for(let i = 0; i < data.users.length; i++){
+        users[i].alreadyemitted = false;
+    }
+}
+
 //room.results = {user:userid, count: votes or anything}
 //may neeed type of game
 function send_results(room,data){
-    var temp_room = get_room_by_id(room);
-    temp_room.round_type = data.type;
-    if(temp_room.results.length > 0){
-        for(let i = 0; i < temp_room.results.length; i++){
-            if( temp_room.results[i].user.id == data.id){
-                temp_room.results[i].count += 1;
-                break;
-            }
-            else{
-                temp_room.results.push({user: get_user(data.id),count: data.count , data: data.data})
-                break;
+    if(get_user(data.id)){
+        var temp_room = get_room_by_id(room);
+        temp_room.round_type.type = data.type;
+        if(temp_room.results.length > 0){
+            for(let i = 0; i < temp_room.results.length; i++){
+                if( temp_room.results[i].user.id == data.id){
+                    temp_room.results[i].count += 1;
+                    break;
+                }
+                else{
+                    temp_room.results.push({user: get_user(data.id),count: data.count , data: data.data})
+                    break;
+                }
             }
         }
+        else{
+            temp_room.results.push({user: get_user(data.id),count: data.count, data: data.data })
+        }  
     }
-    else{
-        temp_room.results.push({user: get_user(data.id),count: data.count, data: data.data })
-    }  
 }
 
 function empty_results(id){
@@ -92,7 +126,7 @@ function empty_results(id){
 function get_results(id){
     for(let i = 0; i< rooms.length; i++){
         if(rooms[i].room_id == id){   
-            var temp = allocate_points(rooms[i].results, rooms[i].round_type,id);
+            var temp = allocate_points(rooms[i].results, rooms[i].round_type.type,id);
             empty_results(id);
             return temp;
         }
@@ -107,38 +141,42 @@ function allocate_points(array,type,roomid){
         });
         var temppoints = 900;
         for(let i = 0; i < array.length; i++){
-            user_points(array[i].user, temppoints);
-            return_array.push({user: array[i].user, points: {plus: temppoints, minus: 0, bonus: 0},data: array[i].data})
-            temppoints -= 160;
+            if(get_user(array[i].user.id)){
+                user_points(array[i].user, temppoints);
+                return_array.push({user: array[i].user, points: {plus: temppoints, minus: 0, bonus: 0},data: array[i].data})
+                temppoints -= 160;
+            }
         }
     }
     for(let i = 0; i < array.length; i++){
-        if(type == 1 || type == 2){
-            if(array[i].count == get_room_user_count(roomid)){
-                user_points(array[i].user, array[i].count * 800 + 400);
-                return_array.push({user: array[i].user, points: {plus: array[i].count * 800, minus: 0, bonus: 400}})
+        if(get_user(array[i].user.id)){
+            if(type == 1 || type == 2){
+                if(array[i].count == get_room_user_count(roomid)){
+                    user_points(array[i].user, array[i].count * 800 + 400);
+                    return_array.push({user: array[i].user, points: {plus: array[i].count * 800, minus: 0, bonus: 400}})
+                }
+                else if(array[i].count >= 2){
+                    user_points(array[i].user, array[i].count * 800 + 100)
+                    return_array.push({user: array[i].user, points: {plus: array[i].count * 800, minus: 0, bonus: 100}})
+                }
+                else{
+                    user_points(array[i].user, array[i].count * 800)
+                    return_array.push({user: array[i].user, points: {plus: array[i].count * 800, minus: 0, bonus: 0}})
+                }
             }
-            else if(array[i].count >= 2){
-                user_points(array[i].user, array[i].count * 800 + 100)
-                return_array.push({user: array[i].user, points: {plus: array[i].count * 800, minus: 0, bonus: 100}})
+            else if(type == 3){
+                user_points(array[i].user, array[i].count.correct * 100 - (array[i].count.selected - array[i].count.correct) * 80);
+                return_array.push({user: array[i].user, points: {plus: array[i].count.correct * 100, minus: (array[i].count.selected - array[i].count.correct) * 80, bonus: 0},data: array[i].data})
             }
-            else{
-                user_points(array[i].user, array[i].count * 800)
-                return_array.push({user: array[i].user, points: {plus: array[i].count * 800, minus: 0, bonus: 0}})
+            else if(type == 4){
+                user_points(array[i].user, array[i].count.typed * 100 - (array[i].count.total - array[i].count.typed) * 40);
+                return_array.push({user: array[i].user, points: {plus: array[i].count.typed * 100, minus: (array[i].count.total - array[i].count.typed) * 40, bonus: 0}})
             }
-        }
-        else if(type == 3){
-            user_points(array[i].user, array[i].count.correct * 100 - (array[i].count.selected - array[i].count.correct) * 80);
-            return_array.push({user: array[i].user, points: {plus: array[i].count.correct * 100, minus: (array[i].count.selected - array[i].count.correct) * 80, bonus: 0},data: array[i].data})
-        }
-        else if(type == 4){
-            user_points(array[i].user, array[i].count.typed * 100 - (array[i].count.total - array[i].count.typed) * 40);
-            return_array.push({user: array[i].user, points: {plus: array[i].count.typed * 100, minus: (array[i].count.total - array[i].count.typed) * 40, bonus: 0}})
-        }
-        else if(type == 5){
-            if(array[i].count >= 1){
-                user_points(array[i].user, 600 + (array[i].count - 1) * 100);
-                return_array.push({user: array[i].user, points: {plus: 600 + (array[i].count - 1) * 100, minus: 0, bonus: 0}})
+            else if(type == 5){
+                if(array[i].count >= 1){
+                    user_points(array[i].user, 600 + (array[i].count - 1) * 100);
+                    return_array.push({user: array[i].user, points: {plus: 600 + (array[i].count - 1) * 100, minus: 0, bonus: 0}})
+                }
             }
         }
     }
@@ -187,9 +225,9 @@ function add_room_data(data,roomid){
 function get_room_data(roomid){
     for(let i = 0; i< rooms.length; i++){
         if(rooms[i].room_id == roomid){
-            var res = rooms[i].data;
+            var tempres = rooms[i].data;
             empty_room_data(roomid);
-            return res;
+            return tempres;
         }
     }
 }
@@ -239,6 +277,25 @@ function random_user_from_room(roomid){
     return get_room_users(roomid).users[userindex];
 }
 
+function startgame(roomid){
+    const room = get_room_by_id(roomid);
+    room.gamestarted = true;
+}
+
+function is_game_running(roomid){
+    const room = get_room_by_id(roomid);
+    return room.gamestarted;
+}
+
+function get_round_type(roomid){
+    const room = get_room_by_id(roomid);
+    return room.round_type;
+}
+
+function set_round_type(roomid,data){
+    const room = get_room_by_id(roomid);
+    room.round_type = data;
+}
 
 module.exports = {
     user_join,
@@ -255,5 +312,12 @@ module.exports = {
     delete_room,
     get_results,
     send_results,
-    random_user_from_room
+    random_user_from_room,
+    decrease_room_emits,
+    user_emitted,
+    users_emitted_false,
+    startgame,
+    is_game_running,
+    get_round_type,
+    set_round_type
 }

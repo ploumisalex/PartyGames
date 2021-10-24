@@ -50,6 +50,10 @@ var guesslocation = {lat: 256, lng: 256};
 var querylocation;
 var has_sent_results = false;
 
+//in case someone leaves
+var emitagain = '';
+
+
 
 const {username,room} = Qs.parse(location.search,{
     ignoreQueryPrefix: true
@@ -70,12 +74,24 @@ chat.submit((e)=>{
                 canusechat = false;
                 socket.emit('guessed_correctly', {type: current_game, id: artistid, count: 1})
                 socket.emit('results', {type: current_game, id: myid, count:  1,data: ''});
+                emitagain = 'results';
+            }
+            else{
+                socket.emit('client_message', msg);
+                e.target.elements.msg.value = '';
+                e.target.elements.msg.focus();
             }
         }
-        socket.emit('client_message', msg);
-        e.target.elements.msg.value = '';
-        e.target.elements.msg.focus();
+        else{
+            socket.emit('client_message', msg);
+            e.target.elements.msg.value = '';
+            e.target.elements.msg.focus();
+        }
     }
+})
+
+socket.on('emit_again', ()=>{
+    socket.emit(emitagain, null);
 })
 
 typeracer_form.submit((e)=>{
@@ -123,9 +139,26 @@ socket.emit('join_room', {username,room});
 function start_game(){
     $('#ready').css('visibility','hidden')
     socket.emit('start_game');
+    emitagain = 'start_game';
 }
 
+socket.on('removeready',(data)=>{
+    $('#ready').css('visibility','hidden');
+    current_game = data.type;
+    if(current_game == 5){
+        artistid = data.query.user.id;
+        current_word = data.query.word;
+    }
+    else if(current_game == 6){
+        querylocation = data.query;
+    }
+    else if(current_game == 3){
+        query_array = data.query;
+    }
+})
+
 socket.on('results', (data) =>{
+    clearInterval(t);
     canusechat = true;
     data_ul.html('');
     promt_label.html('Results of the previous round');
@@ -160,11 +193,14 @@ socket.on('results', (data) =>{
     }
     start_timer(10, ()=>{
         socket.emit('start_round');
+        emitagain = 'start_round';
     });
 })
 
 socket.on('start_second_phase', (res)=>{
+    clearInterval(t);
     timer.html('');
+    has_sent_results = false;
     second_phase_data(res);
 })
 
@@ -174,7 +210,6 @@ socket.on('start_round',(promt)=>{
     current_game = promt.type;
     if(promt.type == 1){
         promt_label.html("Next Round: Draw my thing!");
-        promt_label.slideUp(500);
         start_timer(5,()=>{
             start_round_draw(promt);
         });
@@ -226,41 +261,25 @@ function second_phase_data(res){
 }
 
 function end_phase_one(){
-    clearInterval(t);
+    has_sent_results = true;
     if(current_game == 1){
         $('#done').css('visibility','hidden');
         drawing = false;   
         const canvas_data = canvas.toDataURL();
         socket.emit('end_phase_one', canvas_data);
+        emitagain = 'end_phase_one';
     }
     else if(current_game == 2){
         $('#done2').css('visibility','hidden');
-        const fill_data = document.getElementById('fill_input').value;
+        var inputel = document.getElementById("fill_input");
+        const fill_data = inputel.value;
+        inputel.style.visibility = 'hidden';
         socket.emit('end_phase_one', fill_data);
+        emitagain = 'end_phase_one';
     }
     else if(current_game == 3){
         socket.emit('end_phase_one', '');
-    }
-    else if(current_game == 4){
-        send_res();
-    }
-    else if(current_game == 5){
-        send_res();
-    }
-    else if(current_game == 6){
-        send_res();
-    }
-}
-
-function send_res(userid){
-    if(current_game == 1){
-        send_results_draw(userid);
-    }
-    else if(current_game == 2){
-        send_results_fill(userid);
-    }
-    else if(current_game == 3){
-        send_results_pattern(userid);  
+        emitagain = 'end_phase_one';
     }
     else if(current_game == 4){
         send_results_typeracer(myid);
@@ -270,6 +289,21 @@ function send_res(userid){
     }
     else if(current_game == 6){
         send_results_geomaster(myid);
+    }
+}
+
+function send_res(userid){
+    if(!has_sent_results){
+        has_sent_results = true;
+        if(current_game == 1){
+            send_results_draw(userid);
+        }
+        else if(current_game == 2){
+            send_results_fill(userid);
+        }
+        else if(current_game == 3){
+            send_results_pattern(userid);  
+        }
     }
 }
 
@@ -482,6 +516,7 @@ socket.on('connect', () => {
         game_draw.css("display", "none");
         game_fill.css("display", "flex");
         $('#done2').css('visibility','visible');
+        $('#fill_input').css('visibility','visible');
         game_pattern.css("display", "none");
         game_typeracer.css("display", "none");
         game_geomaster.css("display", "none");
@@ -509,6 +544,7 @@ socket.on('connect', () => {
         game_pattern.css("display", "none");
         game_typeracer.css("display", "none");
         game_geomaster.css("display", "flex");
+        $('#done4').css('visibility', 'visible');
         second_panel.css("display", "none");
      }
  }
@@ -519,15 +555,24 @@ function start_round_draw(promt){
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 8;
     set_visibility(game_draw);
+    document.getElementById("buttons").style.visibility = 'visible';
     drawing = true;
-    start_timer(90,end_phase_one);
+    start_timer(90,()=>{
+        if(!has_sent_results){
+            end_phase_one();
+        }
+    });
 }
 
 function start_round_fill(promt){
     promt_label.html(promt.query);
     document.getElementById('fill_input').value = '';
     set_visibility(game_fill);
-    start_timer(20,end_phase_one);
+    start_timer(20,()=>{
+        if(!has_sent_results){
+            end_phase_one();
+        }
+    });
 }
 
 function start_round_pattern(promt){
@@ -535,7 +580,11 @@ function start_round_pattern(promt){
     result_array = [];
     promt_label.html('Try to remember the pattern shown bellow!');
     set_visibility(game_pattern);
-    start_timer(10,end_phase_one);
+    start_timer(10,()=>{
+        if(!has_sent_results){
+            end_phase_one();
+        }
+    });
     fill_pattern_table(promt.query);
 }
 
@@ -545,7 +594,11 @@ function start_round_typeracer(promt){
     result_array = [];
     promt_label.html('Type as many words from the list below as possible!');
     set_visibility(game_typeracer);
-    start_timer(20,end_phase_one);
+    start_timer(20,()=>{
+        if(!has_sent_results){
+            end_phase_one();
+        }
+    });
     query_array = promt.query;
     for(let i = 0 ; i < promt.query.length; i++){
         var templi = document.createElement('li');
@@ -563,7 +616,11 @@ function start_round_guessdraw(promt){
     current_word = promt.query.word;
     artistid = promt.query.user.id;
     set_visibility(game_draw);
-    start_timer(90,end_phase_one);
+    start_timer(90,()=>{
+        if(!has_sent_results){
+            end_phase_one();
+        }
+    });
     if(myid == artistid){
         promt_label.html(promt.query.word);
         drawing = true;
@@ -571,6 +628,7 @@ function start_round_guessdraw(promt){
         document.getElementById("buttons").style.visibility = 'visible';
         socket.emit('results', {type: current_game, id: myid, count: 0,data: ''});
         has_sent_results = true;
+        emitagain = 'results';
     }
     else{
         var tempword = [];
@@ -591,7 +649,11 @@ function start_round_geomaster(promt){
     querylocation = promt.query;
     promt_label.html('Guess where in the world is the current location!');
     initialize_map_pano(promt);
-    start_timer(60,end_phase_one);
+    start_timer(60,()=>{
+        if(!has_sent_results){
+            end_phase_one();
+        }
+    });
 }
 
 
@@ -635,57 +697,51 @@ function second_phase_pattern_data(res){
 }
 
 function send_results_draw(userid){
-    if(!has_sent_results){
-        var buttons = document.querySelectorAll('.canvasbutton');
-        socket.emit('results', {type: current_game, id: userid, count: 1, data: ''});
-        for (let i = 0; i < buttons.length; i++) {
-            buttons[i].disabled = true;
-        }
-        has_sent_results = true;
+    var buttons = document.querySelectorAll('.canvasbutton');
+    socket.emit('results', {type: current_game, id: userid, count: 1, data: ''});
+    emitagain = 'results';
+    for (let i = 0; i < buttons.length; i++) {
+        buttons[i].disabled = true;
     }
 }
 
 
 function send_results_fill(userid){
-    if(!has_sent_results){
-        var buttons = document.querySelectorAll('.fillbutton');
-        socket.emit('results', {type:current_game, id: userid, count: 1, data: ''});
-        for (let i = 0; i < buttons.length; i++) {
-            buttons[i].disabled = true;
-        }
-        has_sent_results = true;
+    var buttons = document.querySelectorAll('.fillbutton');
+    socket.emit('results', {type:current_game, id: userid, count: 1, data: ''});
+    emitagain = 'results';
+    for (let i = 0; i < buttons.length; i++) {
+        buttons[i].disabled = true;
     }
+
 }
 
 function send_results_pattern(userid){
-    if(!has_sent_results){
-        $('#done3').css('visibility','hidden');
-        var buttons = document.querySelectorAll('.patternbutton');
-        for (let i = 0; i < buttons.length; i++) {
-            buttons[i].disabled = true;
-        }
-        socket.emit('results', {type: current_game, id: userid, count: calculate_points(),data: result_array});
-        has_sent_results = true;
+    $('#done3').css('visibility','hidden');
+    var buttons = document.querySelectorAll('.patternbutton');
+    for (let i = 0; i < buttons.length; i++) {
+        buttons[i].disabled = true;
     }
+    socket.emit('results', {type: current_game, id: userid, count: calculate_points(),data: result_array});
+    emitagain = 'results';
 }
 
 function send_results_typeracer(userid){
-    if( !has_sent_results){
-        socket.emit('results', {type: current_game, id: userid, count: {total: query_array.length, typed: result_array.length}, data: ''});
-        has_sent_results = true;
-    }
+    socket.emit('results', {type: current_game, id: userid, count: {total: query_array.length, typed: result_array.length}, data: ''});
+    emitagain = 'results';
+
 }
 
 function send_results_guessdraw(userid){
-    if(!has_sent_results){
-        socket.emit('results', {type: current_game, id: userid, count: 0,data: ''});
-        has_sent_results = true;
-    }
+    socket.emit('results', {type: current_game, id: userid, count: 0,data: ''});
+    emitagain = 'results';
+    
 }
 
 function send_results_geomaster(userid){
+    $('#done4').css('visibility', 'hidden');
     socket.emit('results', {type: current_game, id: userid, count: calculate_points_geomaster(),data: guesslocation});
-    has_sent_results = true;
+    emitagain = 'results';
 }
 
 
