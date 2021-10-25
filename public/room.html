@@ -137,6 +137,16 @@
           </div>
           <button id="done4" onclick="end_phase_one()">Done</button>
         </div>
+        <div id="game_pickcard">
+          <ul id='cardsul'>
+            <button class='pickcard_button' onclick="pickcard(0)">-200 points</button>
+            <button class='pickcard_button' onclick="pickcard(1)">-100 points</button>
+            <button class='pickcard_button' onclick="pickcard(2)">0 points</button>
+            <button class='pickcard_button' onclick="pickcard(3)">+200 points</button>
+            <button class='pickcard_button' onclick="pickcard(4)">+1000 points</button>
+          </ul>
+          <label id='pickcard_label'>If 2 or more players pick the same card, they lose 500 points for each player that picked it!</label>
+        </div>
       </div>
     </div>  
     <div id="chat_area">

@@ -22,8 +22,8 @@ function user_join(idvar,usernamevar,roomid){
             emits: 0,
             data: [],
             results: [],
-            rounds: 10,
-            rounds_left: 10,
+            rounds: 1,
+            rounds_left: 1,
             round_type: null,
             gamestarted: false
         }
@@ -57,7 +57,7 @@ function user_leave(id){
 }
 
 function get_room_users(roomid){
-    return {room: roomid, users: users.filter(user => user.room === roomid)};
+    return users.filter(user => user.room === roomid);
 }
 
 function increase_room_emits(room){
@@ -80,13 +80,12 @@ function decrease_room_emits(roomid,user){
 
 function user_emitted(userid){
     const user = get_user(userid);
-
     user.alreadyemitted = true;
 }
 
 function users_emitted_false(roomid){
-    const data = get_room_users(roomid);
-    for(let i = 0; i < data.users.length; i++){
+    const users = get_room_users(roomid);
+    for(let i = 0; i < users.length; i++){
         users[i].alreadyemitted = false;
     }
 }
@@ -96,22 +95,25 @@ function users_emitted_false(roomid){
 function send_results(room,data){
     if(get_user(data.id)){
         var temp_room = get_room_by_id(room);
-        temp_room.round_type.type = data.type;
-        if(temp_room.results.length > 0){
-            for(let i = 0; i < temp_room.results.length; i++){
-                if( temp_room.results[i].user.id == data.id){
-                    temp_room.results[i].count += 1;
-                    break;
-                }
-                else{
-                    temp_room.results.push({user: get_user(data.id),count: data.count , data: data.data})
-                    break;
-                }
+        var tempitem = temp_room.results.find(item => item.user.id === data.id);
+        if(tempitem){
+            if(temp_room.round_type.type == 5){
+                tempitem.count += 1;
             }
+            else{
+                tempitem.count += 1;
+                tempitem.data.push(data.data);
+            }
+            var tempuser = get_user(data.data);
         }
         else{
-            temp_room.results.push({user: get_user(data.id),count: data.count, data: data.data })
-        }  
+            if(temp_room.round_type.type == 1 || temp_room.round_type.type == 2){
+                temp_room.results.push({user: get_user(data.id),count: data.count, data: [data.data] })
+            }
+            else{
+                temp_room.results.push({user: get_user(data.id),count: data.count, data: data.data })
+            }
+        }
     }
 }
 
@@ -133,6 +135,9 @@ function get_results(id){
     }
 }
 
+//game 7 points
+var cardpoints = [-200,-100,0,200,1000];
+
 function allocate_points(array,type,roomid){
     var return_array = [];
     if(type == 6){
@@ -148,20 +153,38 @@ function allocate_points(array,type,roomid){
             }
         }
     }
+    if(type == 7){
+        for(let j = 0; j < array.length; j ++){
+            var voted = array[j].data;
+            var num = array.filter(item => item.data === voted).length;
+            if(num == 1){
+                user_points(array[j].user, cardpoints[array[j].data]);
+                if(cardpoints[array[j].data] >= 0){
+                    return_array.push({user: array[j].user, points: {plus: cardpoints[array[j].data],minus: 0, bonus: 0},data: array[j].data});
+                }
+                else{
+                    return_array.push({user: array[j].user, points: {plus: 0,minus: -cardpoints[array[j].data], bonus: 0},data: array[j].data});
+                }
+            }else{
+                user_points(array[j].user, num * (- 500));
+                return_array.push({user: array[j].user, points: {plus: 0,minus: num * ( 500), bonus: 0},data: array[j].data});
+            }
+        }
+    }
     for(let i = 0; i < array.length; i++){
         if(get_user(array[i].user.id)){
             if(type == 1 || type == 2){
                 if(array[i].count == get_room_user_count(roomid)){
                     user_points(array[i].user, array[i].count * 800 + 400);
-                    return_array.push({user: array[i].user, points: {plus: array[i].count * 800, minus: 0, bonus: 400}})
+                    return_array.push({user: array[i].user, points: {plus: array[i].count * 800, minus: 0, bonus: 400},data:array[i].data})
                 }
                 else if(array[i].count >= 2){
                     user_points(array[i].user, array[i].count * 800 + 100)
-                    return_array.push({user: array[i].user, points: {plus: array[i].count * 800, minus: 0, bonus: 100}})
+                    return_array.push({user: array[i].user, points: {plus: array[i].count * 800, minus: 0, bonus: 100},data:array[i].data})
                 }
                 else{
                     user_points(array[i].user, array[i].count * 800)
-                    return_array.push({user: array[i].user, points: {plus: array[i].count * 800, minus: 0, bonus: 0}})
+                    return_array.push({user: array[i].user, points: {plus: array[i].count * 800, minus: 0, bonus: 0},data:array[i].data})
                 }
             }
             else if(type == 3){
@@ -274,7 +297,7 @@ function delete_room(roomid){
 
 function random_user_from_room(roomid){
     var userindex = Math.floor(Math.random() * get_room_user_count(roomid));
-    return get_room_users(roomid).users[userindex];
+    return get_room_users(roomid)[userindex];
 }
 
 function startgame(roomid){

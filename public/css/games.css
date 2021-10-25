@@ -157,6 +157,19 @@ td{
     background-color: black !important;
 }
 
+.white{
+    background-color: white !important;
+}
+
+.green{
+    background-color: #4AFE4A;
+}
+
+.red{
+    background-color: #FF5050;
+}
+
+
 .table_js{
     margin: 32px 0px;
     width: 433px;
@@ -270,4 +283,67 @@ td{
     bottom: 0;
     left: 0;   
     z-index: 5;
+}
+
+#game_pickcard{
+    display: flex;
+    flex-direction: column;
+    width: 1120px;
+    height: 656px;
+    align-items: center;
+    justify-content: center;
+}
+
+
+#cardsul{
+    display: flex;
+    list-style-type: none;
+}
+
+.pickcard_button{
+    text-align: center;
+    height: 256px;
+    width: 128px;
+    font-size: 16px;
+    margin: 0px 16px;
+    background-color: white;
+    border: 1px solid #767676;
+    border-radius: 2px;
+}
+
+.pickcard_button:hover{
+    cursor: pointer;
+    box-shadow: 1px 1px 4px black;
+}
+
+#pickcard_label{
+    font-size: 16px;
+    margin-top: 16px;
+}
+
+.showcardsul{
+    display: flex;
+    list-style-type: none;
+    margin-top: 32px;
+}
+
+.showcardsul label{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 224px;
+    width: 112px;
+    background-color: white;
+    border: 1px solid #767676;
+    border-radius: 2px;
+}
+
+.showcardsul div{
+    display: flex;
+    flex-direction: column;
+    margin: 0px 16px;
+}
+
+.showcardsul p{
+    margin-top: 8px;
 }

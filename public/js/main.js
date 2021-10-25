@@ -18,6 +18,9 @@ const game_typeracer = $('#game_typeracer');
 game_typeracer.css("display", "none");
 const game_geomaster = $('#game_geomaster');
 game_geomaster.css("display", "none");
+const game_pickcard = $('#game_pickcard');
+game_pickcard.css('display','none');
+const cardbuttons = document.querySelectorAll('.pickcard_button');
 const typeracer_ul = document.getElementById('typeracer_ul');
 const typeracer_form = $('#typeracer_form');
 const typeracer_input = document.getElementById("typeracer_input");
@@ -44,24 +47,32 @@ var current_game = 0; //very important
 var query_array = [];
 var result_array = [];
 var myid = '';
+var myusername = '';
 var current_word = '';
 var artistid = '';
 var guesslocation = {lat: 256, lng: 256};
 var querylocation;
 var has_sent_results = false;
+var votearray = [];
+var cardpicked = 2;
+var cardpoints = ['-200 points','-100 points','0 points','+200 points','+1000 points'];
 
 //in case someone leaves
 var emitagain = '';
 
-
-
 const {username,room} = Qs.parse(location.search,{
-    ignoreQueryPrefix: true
+    ignoreQueryPrefix: true,
 })
+myusername = username;
 
 function outputMessage(data){
     const templi = document.createElement('li');
-    templi.innerHTML = "<li class='chatli'><label>"+ data.username +":</label><span>" + data.msg + "</span></li>"
+    templi.innerHTML = "<li class='chatli'><label>"+ data.username +":</label><span>" + data.msg + "</span></li>";
+    if(data.color == 1){
+        templi.classList.add('green');
+    }else if(data.color == 2){
+        templi.classList.add('red');
+    }
     chatul.append(templi);
 }
 
@@ -72,9 +83,10 @@ chat.submit((e)=>{
         if( current_game == 5){
             if(msg == current_word){
                 canusechat = false;
-                socket.emit('guessed_correctly', {type: current_game, id: artistid, count: 1})
-                socket.emit('results', {type: current_game, id: myid, count:  1,data: ''});
+                socket.emit('guessed_correctly', {id: artistid, count: 1,data: ''})
+                socket.emit('results', {id: myid, count:  1,data: ''});
                 emitagain = 'results';
+                e.target.elements.msg.value = '';
             }
             else{
                 socket.emit('client_message', msg);
@@ -119,12 +131,12 @@ function start_timer(seconds,callfunction){
     }, 1000);
 }
 
-socket.on('room_users', (data) =>{
+socket.on('room_users', (users) =>{
     usersul.html('');
     var pointsimg = '/imgs/omegalul.png';
-    for (let i = 0; i < data.users.length; i++) {    
+    for (let i = 0; i < users.length; i++) {    
         const user = document.createElement("li");
-        user.innerHTML = "<li class='usersli'><div><label>"+ data.users[i].username +"</label><p>"+data.users[i].points +" Points</p></div><img src="+pointsimg+"></li>";
+        user.innerHTML = "<li class='usersli'><div><label>"+ users[i].username +"</label><p>"+users[i].points +" Points</p></div><img src="+pointsimg+"></li>";
         usersul.append(user);
     }
 })
@@ -135,6 +147,21 @@ socket.on('message', (data)=>{
 })
 
 socket.emit('join_room', {username,room});
+
+socket.on('final_results', (users)=>{
+    users.sort(function(a, b){
+        return b.points - a.points;
+    });
+    for(let i = 0 ; i < users.length; i ++){
+        var tempuserli = document.createElement('li');
+        if(i == 0){
+            tempuserli.classList.add('winner');
+        }
+        tempuserli.classList.add('finalresultsli');
+        tempuserli.innerHTML = '<label><b>' + users[i].username + '</b> ' + users[i].points +'</label>';
+        data_ul.append(tempuserli);
+    }
+})
 
 function start_game(){
     $('#ready').css('visibility','hidden')
@@ -164,12 +191,6 @@ socket.on('results', (data) =>{
     promt_label.html('Results of the previous round');
     set_visibility(second_panel);
     data_ul.css('flexDirection','column');
-    if(current_game == 5){
-        var templabel = document.createElement('label');
-        templabel.classList.add('templabel');
-        templabel.innerHTML = 'The word was: <b>'+ current_word+'</b> .';
-        data_ul.append(templabel);
-    }
     for(let i = 0; i < data.results.length; i++){
         var temp_li = document.createElement('li');
         if(data.results[i].points.bonus != 0 && data.results[i].points.minus != 0){
@@ -184,14 +205,27 @@ socket.on('results', (data) =>{
         }
         data_ul.append(temp_li);
     }
-    if(current_game == 3){
+    if(current_game == 1 || current_game == 2){
+        create_vote_div(data);
+    }
+    else if(current_game == 5){
+        var templabel = document.createElement('label');
+        templabel.classList.add('templabel');
+        templabel.innerHTML = 'The word was: <b>'+ current_word+'</b>';
+        data_ul.append(templabel);
+    }
+    else if(current_game == 3){
         fill_mini_pattern_table();
         fill_mini_pattern_tables(data);
     }
     else if(current_game == 6){
         create_results_map(data);
     }
-    start_timer(10, ()=>{
+    else if(current_game == 7){
+        show_cards_picked(data);
+    }
+    start_timer(15, ()=>{
+        data_ul.html('');
         socket.emit('start_round');
         emitagain = 'start_round';
     });
@@ -239,9 +273,15 @@ socket.on('start_round',(promt)=>{
         });
     }
     else if(promt.type == 6){
-        promt_label.html("Next Round: Geomaster");
+        promt_label.html("Next Round: Geomaster!");
         start_timer(5,()=>{
             start_round_geomaster(promt);
+        });
+    }
+    else if(promt.type == 7){
+        promt_label.html("Next Round: Pick a card!");
+        start_timer(5,()=>{
+            start_round_pickcard();
         });
     }
 })
@@ -250,9 +290,11 @@ function second_phase_data(res){
     set_visibility(second_panel);
     data_ul.html('');
     if(current_game == 1){
+        votearray = res;
         second_phase_draw_data(res);
     }
     else if(current_game == 2){
+        votearray = res;
         second_phase_fill_data(res);
     }
     else if(current_game == 3){
@@ -290,6 +332,9 @@ function end_phase_one(){
     else if(current_game == 6){
         send_results_geomaster(myid);
     }
+    else if(current_game == 7){
+        send_results_pickcard(myid);
+    }
 }
 
 function send_res(userid){
@@ -307,20 +352,21 @@ function send_res(userid){
     }
 }
 
-function clear_pattern_table(){
-    var cells = document.querySelectorAll('td');
-    for(let i = 0; i < cells.length; i++){
-        cells[i].classList.remove('black');
-    }
-    query_array = [];
+function pickcard(num){
+    cardpicked = num;
+    end_phase_one();
 }
 
-function fill_pattern_table(arr){
-    query_array = arr;
+function fill_pattern_table(){
     var cells = document.querySelectorAll('td');
     for(let i = 0; i < cells.length; i++){
         if( query_array.includes(i)){
+            cells[i].classList.remove('white');
             cells[i].classList.add('black');
+        }
+        else{
+            cells[i].classList.add('white');
+            cells[i].classList.remove('black');
         }
     }
 }
@@ -392,6 +438,59 @@ function calculate_points(){
         }
     }
     return {correct: count, selected: result_array.length};
+}
+
+function create_vote_div(data){
+    var tempul = document.createElement('ul');
+    tempul.classList.add('votesul');
+    for(let i = 0; i < data.results.length; i++){
+        var tempdiv = document.createElement('div');
+        var voted = document.createElement('p');
+        voted.innerHTML = '<b>'+ data.results[i].user.username + '</b>';
+        tempdiv.appendChild(voted);
+        var tempitem = votearray.find(item => item.user === data.results[i].user.id)
+        if(current_game == 1){
+            var tempimg = document.createElement('img');
+            if(tempitem){
+                tempimg.src = tempitem.data;
+                tempdiv.appendChild(tempimg)
+            }
+        }
+        else{
+            var templabel = document.createElement('label');
+            if(tempitem){
+                templabel.innerHTML = tempitem.data;
+                tempdiv.appendChild(templabel);
+            } 
+        }
+        for(let j = 0; j < data.results[i].data.length; j++){
+            var voter = document.createElement('p');
+            voter.innerHTML = '<b>'+ data.results[i].data[j] + '</b>';
+            tempdiv.appendChild(voter);
+        }
+        tempul.appendChild(tempdiv);
+    }
+    data_ul.append(tempul);
+}
+
+function show_cards_picked(data){
+    var tempul = document.createElement('ul');
+    tempul.classList.add('showcardsul');
+    for(let i = 0 ; i < cardpoints.length; i++){
+        var tempdiv = document.createElement('div');
+        var tempp = document.createElement('label');
+        tempp.innerHTML = cardpoints[i];
+        tempdiv.appendChild(tempp);
+        for(let j = 0 ; j < data.results.length; j ++){
+            if(data.results[j].data == i){
+                var voter = document.createElement('p');
+                voter.innerHTML = '<b>'+ data.results[j].user.username + '</b>';
+                tempdiv.appendChild(voter);
+            }
+        }
+        tempul.appendChild(tempdiv);
+    }
+    data_ul.append(tempul);
 }
 
 //drawing stuff
@@ -501,6 +600,7 @@ socket.on('connect', () => {
         game_pattern.css("display", "none");
         game_typeracer.css("display", "none");
         game_geomaster.css("display", "none");
+        game_pickcard.css("display", "none");
         second_panel.css("display", "flex");
      }
      else if(panel == game_draw){
@@ -510,6 +610,7 @@ socket.on('connect', () => {
         game_pattern.css("display", "none");
         game_typeracer.css("display", "none");
         game_geomaster.css("display", "none");
+        game_pickcard.css("display", "none");
         second_panel.css("display", "none");
      }
      else if( panel == game_fill){
@@ -520,6 +621,7 @@ socket.on('connect', () => {
         game_pattern.css("display", "none");
         game_typeracer.css("display", "none");
         game_geomaster.css("display", "none");
+        game_pickcard.css("display", "none");
         second_panel.css("display", "none");
      }
      else if(panel == game_pattern){
@@ -528,6 +630,7 @@ socket.on('connect', () => {
         game_pattern.css("display", "flex");
         game_typeracer.css("display", "none");
         game_geomaster.css("display", "none");
+        game_pickcard.css("display", "none");
         second_panel.css("display", "none");
      }
      else if(panel == game_typeracer){
@@ -536,6 +639,7 @@ socket.on('connect', () => {
         game_pattern.css("display", "none");
         game_typeracer.css("display", "flex");
         game_geomaster.css("display", "none");
+        game_pickcard.css("display", "none");
         second_panel.css("display", "none");
      }
      else if(panel == game_geomaster){
@@ -545,7 +649,18 @@ socket.on('connect', () => {
         game_typeracer.css("display", "none");
         game_geomaster.css("display", "flex");
         $('#done4').css('visibility', 'visible');
+        game_pickcard.css("display", "none");
         second_panel.css("display", "none");
+     }
+     else if(panel == game_pickcard){
+        game_draw.css("display", "none");
+        game_fill.css("display", "none");
+        game_pattern.css("display", "none");
+        game_typeracer.css("display", "none");
+        game_geomaster.css("display", "none");
+        game_pickcard.css("display", "flex");
+        second_panel.css("display", "none");
+
      }
  }
 
@@ -576,21 +691,21 @@ function start_round_fill(promt){
 }
 
 function start_round_pattern(promt){
-    clear_pattern_table();
+    query_array = promt.query;
     result_array = [];
     promt_label.html('Try to remember the pattern shown bellow!');
     set_visibility(game_pattern);
+    fill_pattern_table();
     start_timer(10,()=>{
         if(!has_sent_results){
             end_phase_one();
         }
     });
-    fill_pattern_table(promt.query);
 }
 
 function start_round_typeracer(promt){
     typeracer_ul.innerHTML = '';
-    typeracer_input.innerHTML = '';
+    typeracer_input.value = '';
     result_array = [];
     promt_label.html('Type as many words from the list below as possible!');
     set_visibility(game_typeracer);
@@ -626,7 +741,7 @@ function start_round_guessdraw(promt){
         drawing = true;
         canusechat = false;
         document.getElementById("buttons").style.visibility = 'visible';
-        socket.emit('results', {type: current_game, id: myid, count: 0,data: ''});
+        socket.emit('results', {id: myid, count: 0,data: ''});
         has_sent_results = true;
         emitagain = 'results';
     }
@@ -654,6 +769,20 @@ function start_round_geomaster(promt){
             end_phase_one();
         }
     });
+}
+
+function start_round_pickcard(){
+    set_visibility(game_pickcard);
+    for (let i = 0; i < cardbuttons.length; i++) {
+        cardbuttons[i].disabled = false;
+    }
+    promt_label.html('Pick a card of your liking!');
+    start_timer(40,()=>{
+        if(!has_sent_results){
+            end_phase_one();
+        }
+    });
+
 }
 
 
@@ -698,7 +827,7 @@ function second_phase_pattern_data(res){
 
 function send_results_draw(userid){
     var buttons = document.querySelectorAll('.canvasbutton');
-    socket.emit('results', {type: current_game, id: userid, count: 1, data: ''});
+    socket.emit('results', {id: userid, count: 1, data: myusername});
     emitagain = 'results';
     for (let i = 0; i < buttons.length; i++) {
         buttons[i].disabled = true;
@@ -708,7 +837,7 @@ function send_results_draw(userid){
 
 function send_results_fill(userid){
     var buttons = document.querySelectorAll('.fillbutton');
-    socket.emit('results', {type:current_game, id: userid, count: 1, data: ''});
+    socket.emit('results', {id: userid, count: 1, data: myusername});
     emitagain = 'results';
     for (let i = 0; i < buttons.length; i++) {
         buttons[i].disabled = true;
@@ -722,25 +851,33 @@ function send_results_pattern(userid){
     for (let i = 0; i < buttons.length; i++) {
         buttons[i].disabled = true;
     }
-    socket.emit('results', {type: current_game, id: userid, count: calculate_points(),data: result_array});
+    socket.emit('results', {id: userid, count: calculate_points(),data: result_array});
     emitagain = 'results';
 }
 
 function send_results_typeracer(userid){
-    socket.emit('results', {type: current_game, id: userid, count: {total: query_array.length, typed: result_array.length}, data: ''});
+    socket.emit('results', {id: userid, count: {total: query_array.length, typed: result_array.length}, data: ''});
     emitagain = 'results';
 
 }
 
 function send_results_guessdraw(userid){
-    socket.emit('results', {type: current_game, id: userid, count: 0,data: ''});
+    socket.emit('results', {id: userid, count: 0,data: ''});
     emitagain = 'results';
     
 }
 
 function send_results_geomaster(userid){
     $('#done4').css('visibility', 'hidden');
-    socket.emit('results', {type: current_game, id: userid, count: calculate_points_geomaster(),data: guesslocation});
+    socket.emit('results', {id: userid, count: calculate_points_geomaster(),data: guesslocation});
+    emitagain = 'results';
+}
+
+function send_results_pickcard(userid){
+    for (let i = 0; i < cardbuttons.length; i++) {
+        cardbuttons[i].disabled = true;
+    }
+    socket.emit('results', {id: userid, count: '',data: cardpicked});
     emitagain = 'results';
 }
 
@@ -847,7 +984,7 @@ function create_results_map(array){
     
         addMarkerStyle(querylocation,map,'true');
     for(let i=0;i < array.results.length; i ++){
-        addMarkerStyle(JSON.parse(array.results[i].data),map,array.results[i].user.username.charAt(0));
+        addMarkerStyle(JSON.parse(array.results[i].data),map,array.results[i].user.username.substring(0,2));
     }
     data_ul.append(mapdiv);
 

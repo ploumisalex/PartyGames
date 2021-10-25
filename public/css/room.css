@@ -121,12 +121,12 @@ input[type=text]{
     padding: 16px;
     border-radius: 4px;
     width: 400px;
-    height: 96px;
+    height: 80px;
     justify-content: center;
 }
 
 .fillli p{
-    font-size: 24px;
+    font-size: 20px;
     word-break: break-word;
 }
 
@@ -254,4 +254,48 @@ input[type=text]{
     border: 1px solid black;
     position: absolute;
     bottom: 0;
+}
+
+.votesul{
+    margin-top: 32px;
+    display: flex;
+}
+
+.votesul img{
+    width: 200px;
+    height: 136px;
+    background: white;
+    margin-bottom: 8px;
+    border: 1px solid #767676;
+}
+
+.votesul div{
+    display: flex;
+    flex-direction: column;
+    margin: 8px;
+}
+
+.votesul label{
+    background: white;
+    width: 320px;
+    height: 64px;
+    padding: 8px;
+    text-align: center;
+    border-radius: 4px;
+    border: 1px solid #767676;
+    font-size: 18px;
+    word-break: break-word;
+    margin-bottom: 8px;
+}
+
+.finalresultsli{
+    margin: 24px 0px;
+}
+
+.finalresultsli{
+    font-size: 16px;
+}
+
+.winner{
+    font-size: 32px !important;
 }

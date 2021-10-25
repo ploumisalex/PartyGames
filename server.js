@@ -25,7 +25,7 @@ io.on('connection', (socket) =>{
         if(is_game_running(user.room)){
             io.to(socket.id).emit('removeready', get_round_type(user.room));
         }
-        socket.broadcast.to(user.room).emit('message', formatmsg('bot', 'User ' + user.username + ' has joined the room.'))
+        socket.broadcast.to(user.room).emit('message', formatmsg('bot', 'User ' + user.username + ' has joined the room.',1))
         io.to(user.room).emit('room_users', get_room_users(user.room));
     });
 
@@ -33,7 +33,7 @@ io.on('connection', (socket) =>{
         const user = get_user(socket.id);
         user_emitted(user.id);
         increase_room_emits(user.room);
-        io.to(user.room).emit('message', formatmsg('bot', get_room_emits(user.room) +" out of "+ get_room_user_count(user.room) + " players are ready!" ));
+        io.to(user.room).emit('message', formatmsg('bot', get_room_emits(user.room) +" out of "+ get_room_user_count(user.room) + " players are ready!" ,0));
         if(get_room_emits(user.room) >= get_room_user_count(user.room)){
             users_emitted_false(user.room);
             startgame(user.room);
@@ -56,9 +56,8 @@ io.on('connection', (socket) =>{
                 var randomround = random_promt(user.room);
                 io.to(user.room).emit('start_round', randomround);
                 set_round_type(user.room,randomround);
-                io.to(user.room).emit('room_users', get_room_users(user.room));
             }else{
-                io.to(user.room).emit('message', formatmsg('bot', 'Telos to paixnidi magkes, glipste mou ta ligma'));
+                io.to(user.room).emit('final_results', get_room_users(user.room));
             }
         }
     })
@@ -82,7 +81,7 @@ io.on('connection', (socket) =>{
         const user = get_user(data.id);
         const socketuser = get_user(socket.id);
         send_results(user.room, data);
-        io.to(user.room).emit('message', formatmsg('bot', 'Player ' +socketuser.username + ' has correctly guessed the word!'));
+        io.to(user.room).emit('message', formatmsg('bot', 'Player <b>' +socketuser.username + '</b> has correctly guessed the word!',1));
     })
 
     socket.on('end_phase_one', (datavar)=>{
@@ -105,7 +104,7 @@ io.on('connection', (socket) =>{
 
     socket.on('client_message',(msg)=>{
         const user = get_user(socket.id);
-        io.to(user.room).emit('message', formatmsg(user.username,msg));
+        io.to(user.room).emit('message', formatmsg(user.username,msg,0));
     });
 
     socket.on('canvasctx', (data)=>{
@@ -145,10 +144,10 @@ io.on('connection', (socket) =>{
                 decrease_room_emits(user.room,user);
             }else{
                 if((get_room_emits(user.room) == get_room_user_count(user.room)) && get_room_user_count(user.room) != 0){
-                    io.to(get_room_users(user.room).users[0].id).emit('emit_again');
+                    io.to(get_room_users(user.room)[0].id).emit('emit_again');
                 }
             }
-            io.to(user.room).emit('message', formatmsg('bot', 'User ' + user.username + ' has left the room.'));
+            io.to(user.room).emit('message', formatmsg('bot', 'User ' + user.username + ' has left the room.',2));
             io.to(user.room).emit('room_users', get_room_users(user.room));
             delete_room(user.room);
         }
