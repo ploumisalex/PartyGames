@@ -265,7 +265,7 @@ input[type=text]{
     width: 200px;
     height: 136px;
     background: white;
-    margin-bottom: 8px;
+    margin-bottom: 16px;
     border: 1px solid #767676;
 }
 
@@ -285,17 +285,21 @@ input[type=text]{
     border: 1px solid #767676;
     font-size: 18px;
     word-break: break-word;
-    margin-bottom: 8px;
-}
-
-.finalresultsli{
-    margin: 24px 0px;
+    margin-bottom: 16px;
 }
 
 .finalresultsli{
     font-size: 16px;
+    margin: 16px 0px;
 }
 
 .winner{
     font-size: 32px !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 320px;
+    height: 180px;
+    background-image: url("/imgs/yes.gif"),url("/imgs/fireworks.gif");;
+    background-size: cover,cover;
 }

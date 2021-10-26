@@ -22,8 +22,8 @@ function user_join(idvar,usernamevar,roomid){
             emits: 0,
             data: [],
             results: [],
-            rounds: 1,
-            rounds_left: 1,
+            rounds: 12,
+            rounds_left: 12,
             round_type: null,
             gamestarted: false
         }
@@ -300,9 +300,9 @@ function random_user_from_room(roomid){
     return get_room_users(roomid)[userindex];
 }
 
-function startgame(roomid){
+function startgame(roomid,boolvar){
     const room = get_room_by_id(roomid);
-    room.gamestarted = true;
+    room.gamestarted = boolvar;
 }
 
 function is_game_running(roomid){

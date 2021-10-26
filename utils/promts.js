@@ -1,5 +1,10 @@
-const promts = ['Skateboarding grandma', 'Couple crying while watching Netflix', 'Two men five feet apart in a hot tub', 'Naruto crying','Lizard with a gun'];
-const fill = ['I hate when my boss _____ .','Imagine liking _____ .' ,'_____ . Couldnt be me','Cant wait to wake up tomorrow and _____ .' ,'Whatever the circumstances, never _____ .'];
+const promts = ['Couple crying while watching Netflix', 'Two men five feet apart in a hot tub','Lizard with a gun','Fat cat','Sonic running from a policeman','Pikachu','Thanos','Child running from a chicken',
+'Dog chasing a cat chasing a mouse'];
+
+const fill = ['I hate when my boss _____ .','Imagine liking _____ .' ,'_____ . Couldnt be me.','Cant wait to wake up tomorrow and _____ .' ,'Whatever the circumstances, never _____ .',
+'When it comes down to it, its impossible to _____ .','Humanity would have advanced so much more if only _____ .', '_____ , cringe.','When he said _____ , I felt that .','How can I concentrate when _____ ?',
+"_____ , funniest shit I've ever seen.",];
+
 const words = ['unlock','spotted','object','ill-fated','produce','permit','representative','frail','adorable','parsimonious',
 'advise','popcorn','reminiscent','cloistered','office','stocking','fluttering','farm','serious','slave','wait','aware','carry',
 'absorbed','bless','complete','madly','suppose','far','gold','plug','aboard','rescue','rose','faulty','vague','nostalgic','delight',
@@ -18,12 +23,9 @@ const LATLONGVALIDARRAY = [{lat: 36.1028,lng: -119.5814},{lat: 58.5817,lng: 13.7
     {lat: 37.2419,lng: -94.7409},{lat: 38.3762,lng: 140.1676},{lat: 14.8065,lng: 104.1386},{lat: 64.1015,lng: 19.9742},{lat: 47.4382,lng: 0.5865},{lat: 59.4437,lng: 25.9852},
     {lat: 56.8831,lng: 60.7121},{lat: 43.707,lng: 15.8975},{lat: 50.9984,lng: 17.3877}];
 
-
-
-
 function random_promt(roomid){
     var temp = Math.floor((Math.random() * 7) + 1);
-    var temp = 4;
+    //var temp = 7;
     switch (temp){
         case 1:
             return {type: temp, query: promts[Math.floor(Math.random() * promts.length)]};

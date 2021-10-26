@@ -324,7 +324,7 @@ td{
 .showcardsul{
     display: flex;
     list-style-type: none;
-    margin-top: 32px;
+    margin-top: 16px;
 }
 
 .showcardsul label{
@@ -345,5 +345,10 @@ td{
 }
 
 .showcardsul p{
-    margin-top: 8px;
+    margin-top: 16px;
+}
+
+.gif{
+    height: 256px;
+    width: 256px;
 }

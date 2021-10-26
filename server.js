@@ -36,7 +36,7 @@ io.on('connection', (socket) =>{
         io.to(user.room).emit('message', formatmsg('bot', get_room_emits(user.room) +" out of "+ get_room_user_count(user.room) + " players are ready!" ,0));
         if(get_room_emits(user.room) >= get_room_user_count(user.room)){
             users_emitted_false(user.room);
-            startgame(user.room);
+            startgame(user.room,true);
             if(get_rounds_left(user.room)){
                 var randomround = random_promt(user.room);
                 io.to(user.room).emit('start_round', randomround);
@@ -57,6 +57,7 @@ io.on('connection', (socket) =>{
                 io.to(user.room).emit('start_round', randomround);
                 set_round_type(user.room,randomround);
             }else{
+                startgame(user.room,false);
                 io.to(user.room).emit('final_results', get_room_users(user.room));
             }
         }

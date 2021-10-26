@@ -149,6 +149,7 @@ socket.on('message', (data)=>{
 socket.emit('join_room', {username,room});
 
 socket.on('final_results', (users)=>{
+    promt_label.html('The winner is');
     users.sort(function(a, b){
         return b.points - a.points;
     });
@@ -223,6 +224,11 @@ socket.on('results', (data) =>{
     }
     else if(current_game == 7){
         show_cards_picked(data);
+    }
+    else if(current_game == 4){
+        var tempimg = document.createElement('img');
+        tempimg.src = '/imgs/goku.gif';
+        data_ul.append(tempimg);
     }
     start_timer(15, ()=>{
         data_ul.html('');
@@ -491,6 +497,10 @@ function show_cards_picked(data){
         tempul.appendChild(tempdiv);
     }
     data_ul.append(tempul);
+    var tempimg = document.createElement('img');
+    tempimg.classList.add('gif');
+    tempimg.src = '/imgs/skele.gif';
+    data_ul.append(tempimg);
 }
 
 //drawing stuff
