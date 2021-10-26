@@ -1,8 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Asap:ital@1&display=swap');
-@font-face {
-    font-family: 'AGENTORANGE';
-    src: url('/ttf/AGENTORANGE.ttf');
-  }
 
 * {
 	box-sizing: border-box;
@@ -22,7 +18,6 @@ header{
 }
 h1{
     font-size: 40px;
-    font-family: 'AGENTORANGE';
 }
 
 .content{

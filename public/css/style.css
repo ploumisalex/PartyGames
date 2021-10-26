@@ -1,11 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400&display=swap');
-
-@font-face {
-    font-family: 'AGENTORANGE';
-    src: url('/ttf/AGENTORANGE.ttf');
-  }
-
-
 * {
 	box-sizing: border-box;
 	margin: 0;
@@ -21,7 +14,6 @@ body {
 
 h1{
     font-size: 56px;
-    font-family: 'AGENTORANGE';
 }
 
 header{
