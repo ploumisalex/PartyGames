@@ -175,16 +175,16 @@ function allocate_points(array,type,roomid){
         if(get_user(array[i].user.id)){
             if(type == 1 || type == 2){
                 if(array[i].count == get_room_user_count(roomid)){
-                    user_points(array[i].user, array[i].count * 800 + 400);
-                    return_array.push({user: array[i].user, points: {plus: array[i].count * 800, minus: 0, bonus: 400},data:array[i].data})
+                    user_points(array[i].user, array[i].count * 600 + 400);
+                    return_array.push({user: array[i].user, points: {plus: array[i].count * 600, minus: 0, bonus: 400},data:array[i].data})
                 }
                 else if(array[i].count >= 2){
-                    user_points(array[i].user, array[i].count * 800 + 100)
-                    return_array.push({user: array[i].user, points: {plus: array[i].count * 800, minus: 0, bonus: 100},data:array[i].data})
+                    user_points(array[i].user, array[i].count * 600 + 100)
+                    return_array.push({user: array[i].user, points: {plus: array[i].count * 600, minus: 0, bonus: 100},data:array[i].data})
                 }
                 else{
-                    user_points(array[i].user, array[i].count * 800)
-                    return_array.push({user: array[i].user, points: {plus: array[i].count * 800, minus: 0, bonus: 0},data:array[i].data})
+                    user_points(array[i].user, array[i].count * 600)
+                    return_array.push({user: array[i].user, points: {plus: array[i].count * 600, minus: 0, bonus: 0},data:array[i].data})
                 }
             }
             else if(type == 3){
