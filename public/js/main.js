@@ -345,7 +345,7 @@ socket.on('start_round',(promt)=>{
     else if(promt.type == 6){
         promt_label.html("Next Round: Geomaster!");
         start_timer(5,()=>{
-            start_round_geomaster(promt);
+           start_round_geomaster(promt);
         });
     }
     else if(promt.type == 7){
@@ -989,7 +989,7 @@ function send_results_dodgeball(userid){
     emitagain = 'results';
 }
 
-/*function initialize(lat,long) {
+function initialize(lat,long) {
     var location = {lat: lat, lng: long};
     const panorama = new google.maps.StreetViewPanorama(
         document.getElementById("pano"),
@@ -1001,10 +1001,9 @@ function send_results_dodgeball(userid){
       },
       addressControl: false,
       fullscreenControl: false,
-      linksControl: false,
-      clickToGo: false,
       scrollwheel: false,
-      zoomControl: false
+      zoomControl: false,
+      showRoadLabels: false
     }
   );
 }
@@ -1021,11 +1020,10 @@ function test(){
             initialize(x,y)
             console.log( '{lat: '+ x+',lng: ' + y + '}');
         } else {
-            test();
-            console.log('rip');   
+            test(); 
         }
     });  
-}*/
+}
 
 
 let markers = [];
@@ -1051,10 +1049,9 @@ function initialize_map_pano(promt){
         },
         addressControl: false,
         fullscreenControl: false,
-        linksControl: false,
-        clickToGo: false,
         scrollwheel: false,
-        zoomControl: false
+        zoomControl: false,
+        showRoadLabels: false
     });
 }
 
