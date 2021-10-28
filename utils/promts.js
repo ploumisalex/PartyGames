@@ -24,8 +24,8 @@ const LATLONGVALIDARRAY = [{lat: 36.1028,lng: -119.5814},{lat: 58.5817,lng: 13.7
     {lat: 56.8831,lng: 60.7121},{lat: 43.707,lng: 15.8975},{lat: 50.9984,lng: 17.3877}];
 
 function random_promt(roomid){
-    var temp = Math.floor((Math.random() * 7) + 1);
-    //var temp = 7;
+    var temp = Math.floor((Math.random() * 8) + 1);
+    //var temp = 8;
     switch (temp){
         case 1:
             return {type: temp, query: promts[Math.floor(Math.random() * promts.length)]};
@@ -50,6 +50,8 @@ function random_promt(roomid){
         case 6:
             return {type: temp, query: get_random_latlng()};
         case 7:
+            return {type: temp, query: ''};
+        case 8: 
             return {type: temp, query: ''};
     }
 }

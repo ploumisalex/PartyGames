@@ -201,6 +201,15 @@ function allocate_points(array,type,roomid){
                     return_array.push({user: array[i].user, points: {plus: 600 + (array[i].count - 1) * 100, minus: 0, bonus: 0}})
                 }
             }
+            else if(type == 8){
+                user_points(array[i].user, array[i].count * 300 - 100);
+                if(array[i].count > 0){
+                    return_array.push({user: array[i].user, points: {plus: array[i].count * 300 - 100, minus: 0, bonus: 0}})
+                }
+                else{
+                    return_array.push({user: array[i].user, points: {plus: 0, minus: 100, bonus: 0}})
+                }
+            }
         }
     }
     return return_array;

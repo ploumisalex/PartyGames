@@ -56,6 +56,70 @@ var has_sent_results = false;
 var votearray = [];
 var cardpicked = 2;
 var cardpoints = ['-200 points','-100 points','0 points','+200 points','+1000 points'];
+var dodgeballplayer = {
+    radius: 32,
+    speed: 6,
+    lives: 3,
+    x: 480,
+    y: 328
+}
+
+var dodgeballcontroller = {
+    left: false,
+    right: false,
+    up: false,
+    down: false
+}
+
+var dodgeballlives = 5;
+var dodgeballframe = 0;
+var dodgeballstop = false;
+var bulletsarray = [];
+class bullet{
+    constructor(type){
+        this.type = type;
+        this.speed = Math.random() * 4 + 3;
+        this.radius = 4;
+        this.distance;
+        if(type == 0 ){
+            this.x = Math.random() * 960;
+            this.y = 0;
+        }
+        else if(type == 1){
+            this.x = 960;
+            this.y = Math.random() * 656;
+        }
+        else{
+            this.x = 0;
+            this.y = Math.random() * 656;
+        }
+    }
+
+    update(){
+        if(this.type == 0){
+            this.y += this.speed;
+        }
+        else if(this.type == 1){
+            this.x -= this.speed;
+        }
+        else{
+            this.x += this.speed;
+        }
+        const dx = this.x - dodgeballplayer.x;
+        const dy = this.y - dodgeballplayer.y;
+        this.distance = Math.sqrt(dx*dx + dy*dy);
+    }
+
+    draw(){
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(this.x,this.y,this.radius,0, Math.PI * 2);
+        ctx.fill();
+        ctx.closePath();
+        ctx.strokeStyle = '#000000';
+        ctx.stroke();
+    }
+}
 
 //in case someone leaves
 var emitagain = '';
@@ -290,6 +354,12 @@ socket.on('start_round',(promt)=>{
             start_round_pickcard();
         });
     }
+    else if(promt.type == 8){
+        promt_label.html("Next Round: Dodgeball!");
+        start_timer(5,()=>{
+            start_round_dodgeball();
+        });
+    }
 })
 
 function second_phase_data(res){
@@ -340,6 +410,9 @@ function end_phase_one(){
     }
     else if(current_game == 7){
         send_results_pickcard(myid);
+    }
+    else if(current_game == 8){
+        send_results_dodgeball(myid);
     }
 }
 
@@ -736,6 +809,7 @@ function start_round_typeracer(promt){
 
 function start_round_guessdraw(promt){
     clear_canvas();
+    document.getElementById("buttons").style.visibility = 'visible';
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 8;
     current_word = promt.query.word;
@@ -793,6 +867,25 @@ function start_round_pickcard(){
         }
     });
 
+}
+
+function start_round_dodgeball(){
+    dodgeballlives = 5;
+    ctx.lineWidth = 8;
+    dodgeballstop = false;
+    bulletsarray = [];
+    clear_canvas();
+    set_visibility(game_draw);
+    document.getElementById("buttons").style.visibility = 'hidden';
+    $('#done').css('visibility','hidden');
+    add_events();
+    game8_loop();
+    start_timer(30,()=>{
+        if(!has_sent_results){
+            dodgeballstop = true;
+            end_phase_one();
+        }
+    });
 }
 
 
@@ -891,8 +984,12 @@ function send_results_pickcard(userid){
     emitagain = 'results';
 }
 
+function send_results_dodgeball(userid){
+    socket.emit('results', {id: userid, count: dodgeballlives,data: ''});
+    emitagain = 'results';
+}
 
-function initialize(lat,long) {
+/*function initialize(lat,long) {
     var location = {lat: lat, lng: long};
     const panorama = new google.maps.StreetViewPanorama(
         document.getElementById("pano"),
@@ -911,7 +1008,6 @@ function initialize(lat,long) {
     }
   );
 }
-
 function test(){
     var precision = 10000; // 5 decimals
     var x = Math.floor(Math.random() * (110 * precision) - 40 * precision) / (1*precision);
@@ -929,7 +1025,7 @@ function test(){
             console.log('rip');   
         }
     });  
-}
+}*/
 
 
 let markers = [];
@@ -1013,5 +1109,91 @@ function addMarkerStyle(location,map,style){
             label: style,
             map: map,
           });
+    }
+}
+
+
+function game8_loop(){
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0,0,960,656);
+    dodgeballframe++;
+    if(dodgeballcontroller.right && dodgeballplayer.x + dodgeballplayer.radius< 960){
+        dodgeballplayer.x += dodgeballplayer.speed;
+    }
+    if(dodgeballcontroller.left && dodgeballplayer.x - dodgeballplayer.radius > 0){
+        dodgeballplayer.x -= dodgeballplayer.speed;
+    }
+    if(dodgeballcontroller.up && dodgeballplayer.y - dodgeballplayer.radius > 0){
+        dodgeballplayer.y -= dodgeballplayer.speed;
+    }
+    if(dodgeballcontroller.down && dodgeballplayer.y + dodgeballplayer.radius< 656){
+        dodgeballplayer.y += dodgeballplayer.speed;
+    }
+    ctx.fillStyle = '#000000';
+    handle_bullets();
+    ctx.font = "16px Georgia";
+    ctx.fillText('lives left: ' + dodgeballlives,8,16);
+    ctx.fillStyle = "#EC6969";
+    ctx.beginPath();
+    ctx.arc(Math.floor(dodgeballplayer.x),Math.floor(dodgeballplayer.y),dodgeballplayer.radius,0,2*Math.PI);
+    ctx.fill();
+    if(dodgeballlives <= 0 || dodgeballstop){
+        window.cancelAnimationFrame(game8_loop);
+        remove_events();
+        end_phase_one();
+    }
+    else{
+        window.requestAnimationFrame(game8_loop);
+    }
+}
+
+function add_events(){
+    window.addEventListener('keydown',key_listener);
+    window.addEventListener('keyup', key_listener);
+}
+
+function remove_events(){
+    window.removeEventListener('keydown',key_listener);
+    window.removeEventListener('keyup',key_listener);
+    dodgeballcontroller.left = false;
+    dodgeballcontroller.right = false;
+    dodgeballcontroller.up = false;
+    dodgeballcontroller.down = false;
+}
+
+function key_listener(e){
+    var key_state = (e.type == 'keydown')?true:false;
+        switch(e.keyCode){
+            case 87: //w
+            dodgeballcontroller.up = key_state;
+            break;
+            case 83: //s
+            dodgeballcontroller.down= key_state;
+            break;
+            case 68: //d
+            dodgeballcontroller.right = key_state;
+            break;
+            case 65: //a
+            dodgeballcontroller.left = key_state;
+            break;
+        }
+}
+
+function handle_bullets(){
+    if(dodgeballframe % 10 == 0){
+        bulletsarray.push(new bullet(Math.floor(Math.random()*3)));
+    }
+    for(let i = 0; i < bulletsarray.length; i ++){
+        if(bulletsarray[i].y < 0 || bulletsarray[i].x > 960 || bulletsarray[i].x < 0){
+            bulletsarray.splice(i,1);
+        }
+        else{
+            bulletsarray[i].update();
+            bulletsarray[i].draw();
+        }
+        if(bulletsarray[i].distance < 36){
+            dodgeballlives -= 1;
+            bulletsarray.splice(i,1);
+        }
     }
 }
