@@ -31,6 +31,14 @@ const ctx = canvas.getContext("2d");
 var painting = document.getElementById("canvas_div");
 var painting_style = getComputedStyle(painting);
 
+var clock_audio = new Audio('/sfx/clock.flac');
+var bubble_audio = new Audio('/sfx/bubble.wav');
+var hit_audio = new Audio('/sfx/hit.wav');
+var laugh_audio = new Audio('/sfx/laugh.wav');
+hit_audio.volume = 0.5;
+clock_audio.volume = 0.5;
+laugh_audio.volume = 0.5;
+
 canvas.height = 656; 
 canvas.width = 960; 
 
@@ -192,6 +200,9 @@ function start_timer(seconds,callfunction){
             timer.html(0);
             callfunction();
         }
+        else if(timer.html() < 3){
+            clock_audio.play();
+        }
     }, 1000);
 }
 
@@ -226,6 +237,7 @@ socket.on('final_results', (users)=>{
         tempuserli.innerHTML = '<label><b>' + users[i].username + '</b> ' + users[i].points +'</label>';
         data_ul.append(tempuserli);
     }
+    laugh_audio.play();
 })
 
 function start_game(){
@@ -315,48 +327,56 @@ socket.on('start_round',(promt)=>{
     if(promt.type == 1){
         promt_label.html("Next Round: Draw my thing!");
         start_timer(5,()=>{
+            bubble_audio.play();
             start_round_draw(promt);
         });
     }
     else if(promt.type == 2){
         promt_label.html("Next Round: Fill the blank!");
         start_timer(5,()=>{
+            bubble_audio.play();
             start_round_fill(promt);
         });
     }
     else if(promt.type == 3){
         promt_label.html("Next Round: Memorize the pattern!");
         start_timer(5,()=>{
+            bubble_audio.play();
             start_round_pattern(promt);
         });
     }
     else if(promt.type == 4){
         promt_label.html("Next Round: Typeracer!");
         start_timer(5,()=>{
+            bubble_audio.play();
             start_round_typeracer(promt);
         });
     }
     else if(promt.type == 5){
         promt_label.html("Next Round: Guess the drawing! Player <b>" + promt.query.user.username + "</b> is drawing.");
         start_timer(5,()=>{
+            bubble_audio.play();
             start_round_guessdraw(promt);
         });
     }
     else if(promt.type == 6){
         promt_label.html("Next Round: Geomaster!");
         start_timer(5,()=>{
-           start_round_geomaster(promt);
+            bubble_audio.play();
+            start_round_geomaster(promt);
         });
     }
     else if(promt.type == 7){
         promt_label.html("Next Round: Pick a card!");
         start_timer(5,()=>{
+            bubble_audio.play();
             start_round_pickcard();
         });
     }
     else if(promt.type == 8){
         promt_label.html("Next Round: Dodgeball!");
         start_timer(5,()=>{
+            bubble_audio.play();
             start_round_dodgeball();
         });
     }
@@ -1189,6 +1209,7 @@ function handle_bullets(){
             bulletsarray[i].draw();
         }
         if(bulletsarray[i].distance < 36){
+            hit_audio.play();
             dodgeballlives -= 1;
             bulletsarray.splice(i,1);
         }
