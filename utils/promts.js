@@ -70,10 +70,10 @@ const LATLONGVALIDARRAY = [{lat: 36.1028,lng: -119.5814},{lat: 58.5817,lng: 13.7
     {lat: -7.7973,lng: 110.3259},{lat: 53.7069,lng: 91.4905},{lat: 50.0724,lng: 14.3197},{lat: -29.6982,lng: -51.2213},{lat: 43.4621,lng: -79.7157},{lat: 39.6907,lng: -84.2324},{lat: 56.2123,lng: 34.43},
     {lat: 38.6272,lng: -84.1965}];
 
-var test = [1,2,3,4,5,7];
+var test = [6,8];
 
 function random_promt(roomid){
-    var temp = Math.floor((Math.random() * 6));
+    var temp = Math.floor((Math.random() * 2));
     var temp = test[temp];
     switch (temp){
         case 1:

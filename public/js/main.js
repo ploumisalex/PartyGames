@@ -812,6 +812,7 @@ function start_round_typeracer(promt){
     result_array = [];
     promt_label.html('Type as many words from the list below as possible!');
     set_visibility(game_typeracer);
+    typeracer_input.focus();
     start_timer(20,()=>{
         if(!has_sent_results){
             end_phase_one();
@@ -1044,7 +1045,6 @@ function test(){
         }
     });  
 }
-
 
 let markers = [];
 function initialize_map_pano(promt){
