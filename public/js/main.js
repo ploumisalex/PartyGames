@@ -1056,8 +1056,10 @@ function initialize_map_pano(promt){
         rotateControl: false,
         fullscreenControl: false,});
     map.addListener("click", (mapsMouseEvent) => {
-        addMarker(mapsMouseEvent.latLng,map);
-        guesslocation = JSON.stringify(mapsMouseEvent.latLng.toJSON(), null, 2);
+        if(!has_sent_results){
+            addMarker(mapsMouseEvent.latLng,map);
+            guesslocation = JSON.stringify(mapsMouseEvent.latLng.toJSON(), null, 2);
+        }
     });
     
     var location = {lat: promt.query.lat, lng: promt.query.lng};
